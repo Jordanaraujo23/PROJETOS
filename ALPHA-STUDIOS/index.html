@@ -218,19 +218,190 @@
         </div>
     </section>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAO6azVpX988Vwu___-pp9c0oprqPThMlQ",
+            authDomain: "matematica-em-foco.firebaseapp.com",
+            projectId: "matematica-em-foco",
+            storageBucket: "matematica-em-foco.firebasestorage.app",
+            messagingSenderId: "1031540454030",
+            appId: "1:1031540454030:web:f6a91af6171c1d6c694fdf",
+            measurementId: "G-SS4FPBYQ5X"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getFirestore(app);
+
+        // --- GLOBAL SCOPE HELPERS (Attached to window for HTML events) ---
+        window.db = db; // Expose for debugging if needed
+
+        async function initApp() {
+            // Count Visit - Using Firestore Distributed Counter (or simple field increment for low scale)
+            try {
+                const statsRef = doc(db, "system", "stats");
+                // Check if exists, if not create
+                const statsSnap = await getDoc(statsRef);
+                if (!statsSnap.exists()) {
+                    await setDoc(statsRef, { visits: 1 });
+                } else {
+                    await updateDoc(statsRef, { visits: increment(1) });
+                }
+            } catch (e) {
+                console.log("Analytics/Visit log error (Non-critical):", e);
+            }
+
+            loadHomeFeatured();
+            loadSocialConfigs();
+            loadGallery();
+            loadFeedbacks();
+            
+            // Animation & UI Inits
+            initBG(); animateBG();
+            updateCursorEvents();
+        }
+        window.initApp = initApp; // Make global
+
+        async function loadSocialConfigs() {
+            try {
+                const docSnap = await getDoc(doc(db, "system", "config"));
+                if (docSnap.exists()) {
+                    const config = docSnap.data();
+                    if(config.insta) { document.getElementById('link-insta').href = config.insta.includes('http') ? config.insta : `https://instagram.com/${config.insta.replace('@','')}`; document.getElementById('text-insta').innerText = config.insta; }
+                    if(config.phone) { const cleanPhone = config.phone.replace(/\D/g, ''); document.getElementById('link-whats').href = `https://wa.me/${cleanPhone}`; document.getElementById('text-whats').innerText = config.phone; }
+                    if(config.email) { document.getElementById('link-mail').href = `mailto:${config.email}`; document.getElementById('text-mail').innerText = config.email; }
+                }
+            } catch(e) { console.error("Social load error:", e); }
+        }
+
+        async function loadHomeFeatured() {
+            const container = document.getElementById('home-featured-container');
+            container.innerHTML = `<p style="color:#444; font-size:12px;">Conectando ao neural core...</p>`;
+            
+            try {
+                let html = "";
+                for(let i=1; i<=3; i++) {
+                    const docSnap = await getDoc(doc(db, "featured", `slot${i}`));
+                    if(docSnap.exists()) {
+                        const f = docSnap.data();
+                        if(f.title && f.img) {
+                             html += `
+                                <div class="featured-card" onclick="openLightbox('${f.img}', '${f.title}')">
+                                    <img src="${f.img}" class="featured-img" alt="featured">
+                                    <div class="featured-info"><h3>${f.title}</h3><p style="color:white; opacity:0.8; font-size:0.8rem;">${f.desc || ''}</p></div>
+                                </div>`;
+                        }
+                    }
+                }
+                container.innerHTML = html || "<p>Nenhum destaque ativo.</p>";
+                updateCursorEvents();
+            } catch (e) {
+                container.innerHTML = "<p>Erro na conexão.</p>";
+            }
+        }
+
+        async function loadGallery() {
+            const gallery = document.getElementById('main-gallery');
+            try {
+                const querySnapshot = await getDocs(collection(db, "gallery"));
+                // Clear existing static items if any? Code used prepend so let's just use what we get.
+                // Or better, clear it first to avoid dups if re-called.
+                gallery.innerHTML = ""; 
+                
+                querySnapshot.forEach((doc) => {
+                    const w = doc.data();
+                    const div = document.createElement('div');
+                    div.className = 'gallery-card';
+                    div.onclick = () => openLightbox(w.url, w.title);
+                    div.innerHTML = `<img src="${w.url}" loading="lazy"><div class="card-overlay"><h3>${w.title}</h3></div>`;
+                    gallery.prepend(div); // Newest first usually if we iterate standard
+                });
+                updateCursorEvents();
+            } catch(e) {
+                console.error("Gallery load error", e);
+            }
+        }
+
+        async function loadFeedbacks() {
+            const container = document.getElementById('feedback-container');
+            const querySnapshot = await getDocs(collection(db, "leads"));
+            const aprovados = [];
+            querySnapshot.forEach(doc => {
+                 const d = doc.data();
+                 // Relaxed check to handle string "true" or boolean true
+                 if(d.exibir == true || d.exibir == "true") aprovados.push(d);
+            });
+            
+            if(aprovados.length === 0) { container.innerHTML = `<p style="color:#555; font-size:12px;">Aguardando protocolos...</p>`; return; }
+            container.innerHTML = aprovados.map(f => `<div class="feedback-card"><p style="color:white; margin-bottom:15px; font-style:italic;">"${f.desc}"</p><div class="feedback-author">${f.nome} / ${f.cidade}</div></div>`).join('');
+        }
+
+        window.submitContact = async () => {
+            const btn = document.getElementById('btn-submit');
+            const data = { 
+                nome: document.getElementById('c-nome').value, 
+                tel: document.getElementById('c-tel').value, 
+                cidade: document.getElementById('c-cidade').value, 
+                desc: document.getElementById('c-desc').value || '', 
+                data: new Date().toLocaleString(), // String date for readable admin
+                timestamp: Date.now(),
+                exibir: false 
+            };
+            
+            if(!data.nome || !data.tel || !data.cidade) return alert("Preencha os campos obrigatórios!");
+            
+            btn.innerText = "ENVIANDO..."; btn.disabled = true;
+
+            try {
+                await addDoc(collection(db, "leads"), data);
+                alert("Protocolo enviado com sucesso! Aguarde nosso contato.");
+                location.reload();
+            } catch(e) {
+                console.error(e);
+                alert("Erro ao enviar. Tente novamente.");
+                btn.innerText = "INICIAR_PROCESSO"; btn.disabled = false;
+            }
+        }
+
+        // --- UI/UX LOGIC (Keep existing visual helper functions) ---
+        
+        window.switchPage = (pageId) => {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-links a').forEach(l => l.classList.remove('active-link'));
+            document.getElementById(pageId).classList.add('active');
+            const link = document.getElementById('nav-' + (pageId === 'contact-overlay' ? 'contact-overlay' : pageId));
+            if(link) link.classList.add('active-link');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.openLightbox = (url, title) => {
+            document.getElementById('lb-img').src = url;
+            document.getElementById('lb-title').innerText = title;
+            const lb = document.getElementById('lightbox');
+            lb.style.display = 'flex'; setTimeout(() => lb.classList.add('active'), 10);
+        };
+
+        window.closeLightbox = () => { const lb = document.getElementById('lightbox'); lb.classList.remove('active'); setTimeout(() => lb.style.display = 'none', 400); };
+        
+        // Canvas BG Logic
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
-        function initBG() {
+        
+        window.initBG = () => {
             canvas.width = window.innerWidth; canvas.height = window.innerHeight;
             particles = [];
             let particleCount = window.innerWidth < 768 ? 25 : 45;
             for (let i = 0; i < particleCount; i++) {
                 particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, speed: 1.5 + Math.random() * 3, len: 10 + Math.random() * 60, opacity: 0.1 + Math.random() * 0.4 });
             }
-        }
-        function animateBG() {
+        };
+        
+        window.animateBG = () => {
             ctx.fillStyle = 'rgba(0, 0, 0, 0.15)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.strokeStyle = '#CCFF00';
             particles.forEach(p => {
@@ -238,101 +409,21 @@
                 p.y += p.speed; if (p.y > canvas.height) p.y = -p.len;
             });
             requestAnimationFrame(animateBG);
-        }
-        window.addEventListener('resize', initBG); initBG(); animateBG();
+        };
+        window.addEventListener('resize', initBG);
 
+        // Cursor Logic
         const cursor = document.getElementById('custom-cursor');
         document.addEventListener('mousemove', (e) => { cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px'; });
-
-        function initApp() {
-            let count = localStorage.getItem('alpha_access') || 0;
-            count++; localStorage.setItem('alpha_access', count);
-            renderHomeFeatured();
-            loadSocialConfigs();
-            const savedWorks = JSON.parse(localStorage.getItem('alpha_gallery') || '[]');
-            savedWorks.forEach(w => renderWork(w.title, w.url));
-            loadFeedbacks();
-            updateCursorEvents();
-        }
-
-        function loadSocialConfigs() {
-            const config = JSON.parse(localStorage.getItem('alpha_core_cfg') || '{}');
-            if(config.insta) { document.getElementById('link-insta').href = config.insta.includes('http') ? config.insta : `https://instagram.com/${config.insta.replace('@','')}`; document.getElementById('text-insta').innerText = config.insta; }
-            if(config.phone) { const cleanPhone = config.phone.replace(/\D/g, ''); document.getElementById('link-whats').href = `https://wa.me/${cleanPhone}`; document.getElementById('text-whats').innerText = config.phone; }
-            if(config.email) { document.getElementById('link-mail').href = `mailto:${config.email}`; document.getElementById('text-mail').innerText = config.email; }
-        }
-
-        function renderHomeFeatured() {
-            const container = document.getElementById('home-featured-container');
-            const featured = JSON.parse(localStorage.getItem('alpha_featured_home') || '[]');
-            if (featured.length > 0) {
-                container.innerHTML = featured.map(f => `
-                    <div class="featured-card" onclick="openLightbox('${f.img}', '${f.title}')">
-                        <img src="${f.img}" class="featured-img" alt="featured">
-                        <div class="featured-info"><h3>${f.title}</h3><p style="color:white; opacity:0.8; font-size:0.8rem;">${f.desc || ''}</p></div>
-                    </div>
-                `).join('');
-            } else { container.innerHTML = `<p style="color:#444; font-size:12px;">Sincronizando ativos...</p>`; }
-            updateCursorEvents();
-        }
-
-        function submitContact() {
-            const data = { nome: document.getElementById('c-nome').value, tel: document.getElementById('c-tel').value, cidade: document.getElementById('c-cidade').value, desc: document.getElementById('c-desc').value || '', data: new Date().toLocaleString(), exibir: false };
-            if(!data.nome || !data.tel || !data.cidade) return alert("Preencha os campos obrigatórios!");
-            const leads = JSON.parse(localStorage.getItem('alpha_leads') || '[]');
-            leads.push(data);
-            localStorage.setItem('alpha_leads', JSON.stringify(leads));
-            alert("Sucesso!"); location.reload();
-        }
-
-        function loadFeedbacks() {
-            const container = document.getElementById('feedback-container');
-            const leads = JSON.parse(localStorage.getItem('alpha_leads') || '[]');
-            const aprovados = leads.filter(l => l.exibir === true).reverse();
-            if(aprovados.length === 0) { container.innerHTML = `<p style="color:#555; font-size:12px;">Aguardando protocolos...</p>`; return; }
-            container.innerHTML = aprovados.map(f => `<div class="feedback-card"><p style="color:white; margin-bottom:15px; font-style:italic;">"${f.desc}"</p><div class="feedback-author">${f.nome} / ${f.cidade}</div></div>`).join('');
-        }
-
-        function switchPage(pageId) {
-            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-links a').forEach(l => l.classList.remove('active-link'));
-            document.getElementById(pageId).classList.add('active');
-            const link = document.getElementById('nav-' + (pageId === 'contact-overlay' ? 'contact-overlay' : pageId));
-            if(link) link.classList.add('active-link');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function renderWork(title, url) {
-            const gallery = document.getElementById('main-gallery');
-            const div = document.createElement('div');
-            div.className = 'gallery-card';
-            div.onclick = () => openLightbox(url, title);
-            div.innerHTML = `<img src="${url}" loading="lazy"><div class="card-overlay"><h3>${title}</h3></div>`;
-            gallery.prepend(div);
-            updateCursorEvents();
-        }
-
-        function openLightbox(url, title) {
-            document.getElementById('lb-img').src = url;
-            document.getElementById('lb-title').innerText = title;
-            const lb = document.getElementById('lightbox');
-            lb.style.display = 'flex'; setTimeout(() => lb.classList.add('active'), 10);
-        }
-
-        function closeLightbox() { const lb = document.getElementById('lightbox'); lb.classList.remove('active'); setTimeout(() => lb.style.display = 'none', 400); }
-
-        function updateCursorEvents() {
-            document.querySelectorAll('a, .gallery-card, button, .social-item, .close-lightbox, .featured-card, #lgpd-check').forEach(el => {
+        
+        window.updateCursorEvents = () => {
+             document.querySelectorAll('a, .gallery-card, button, .social-item, .close-lightbox, .featured-card, #lgpd-check').forEach(el => {
                 el.addEventListener('mouseenter', () => cursor.style.transform = 'translate(-50%, -50%) scale(3)');
                 el.addEventListener('mouseleave', () => cursor.style.transform = 'translate(-50%, -50%) scale(1)');
             });
-        }
+        };
     </script>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        const firebaseConfig = { apiKey: "AIzaSyAO6azVpX988Vwu___-pp9c0oprqPThMlQ", authDomain: "matematica-em-foco.firebaseapp.com", projectId: "matematica-em-foco", storageBucket: "matematica-em-foco.firebasestorage.app", messagingSenderId: "1031540454030", appId: "1:1031540454030:web:f6a91af6171c1d6c694fdf", measurementId: "G-SS4FPBYQ5X" };
-        initializeApp(firebaseConfig);
-    </script>
+
 </body>
 </html>

@@ -215,6 +215,58 @@
         .content-section { display: none; }
         .active-section { display: block; animation: reveal 0.6s var(--bezier); }
 
+        /* MOBILE RESPONSIVENESS */
+        .mobile-menu-btn { display: none; background: transparent; border: 1px solid var(--lime); color: var(--lime); padding: 10px; border-radius: 8px; font-size: 1.2rem; cursor: pointer; }
+
+        @media (max-width: 768px) {
+            body { display: block; overflow-x: hidden; }
+            
+            aside { 
+                transform: translateX(-110%); 
+                width: 85%; 
+                height: 100vh; 
+                margin: 0; 
+                top: 0; left: 0;
+                box-shadow: 10px 0 30px rgba(0,0,0,0.8);
+                transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            }
+            aside.mobile-active { transform: translateX(0); }
+            
+            main { margin-left: 0; width: 100%; padding: 20px; padding-top: 80px; }
+            
+            header { 
+                position: fixed; top: 0; left: 0; width: 100%; 
+                background: rgba(5,6,6,0.9); backdrop-filter: blur(15px);
+                z-index: 90; padding: 15px 20px; margin: 0; border-bottom: 1px solid var(--border);
+            }
+            header h2 { font-size: 0.9rem; }
+            
+            .mobile-menu-btn { display: block; position: fixed; top: 15px; right: 20px; z-index: 101; }
+            
+            /* Hide the sync button on header to save space or move it */
+            #btn-manual-refresh { display: none; } 
+
+            .stats-grid { grid-template-columns: 1fr; }
+            .charts-grid { grid-template-columns: 1fr; }
+            
+            .featured-editor-grid { grid-template-columns: 1fr; }
+            
+            .login-box { padding: 30px; width: 95%; }
+            
+            table, thead, tbody, th, td, tr { display: block; }
+            th { display: none; }
+            td { 
+                position: relative; padding-left: 50%; 
+                border: none; border-bottom: 1px solid #222; 
+            }
+            td:before { 
+                content: attr(data-label); /* Requires data-label attr to work perfectly, or just stacking */
+                position: absolute; left: 10px; color: var(--lime); font-size: 0.7rem; font-weight: bold;
+            }
+            /* Simplified table for now - just stack content */
+            td { padding-left: 10px; text-align: right; display: flex; justify-content: space-between; align-items: center; }
+            td span { text-align: right; }
+        }
     </style>
 </head>
 <body onload="initApp()">
@@ -227,6 +279,8 @@
             <button id="btn-login" style="width: 100%;">ACESSAR_PAINEL</button>
         </div>
     </div>
+
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()"><i class="fas fa-bars"></i></button>
 
     <aside id="sidebar" style="display: none;">
         <a href="#" class="logo">ALPHA<span>STUDIO</span></a>
@@ -331,8 +385,10 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAO6azVpX988Vwu___-pp9c0oprqPThMlQ",
@@ -340,73 +396,110 @@
             projectId: "matematica-em-foco",
             storageBucket: "matematica-em-foco.firebasestorage.app",
             messagingSenderId: "1031540454030",
-            appId: "1:1031540454030:web:f6a91af6171c1d6c694fdf"
+            appId: "1:1031540454030:web:f6a91af6171c1d6c694fdf",
+            measurementId: "G-SS4FPBYQ5X"
         };
 
         const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
         const storage = getStorage(app);
         const auth = getAuth(app);
+        const db = getFirestore(app);
 
         let barChart, pieChart;
         let selectedFiles = [];
 
         // --- GESTÃO DE DESTAQUES (PRINCIPAIS CONTEÚDOS) ---
         
-        window.clearFeaturedSlot = (slot) => {
+        window.toggleMobileMenu = () => {
+            const sb = document.getElementById('sidebar');
+            sb.classList.toggle('mobile-active');
+            
+            // Close menu if clicked on a link (optional UX improvement)
+            if(sb.classList.contains('mobile-active')) {
+                const links = sb.querySelectorAll('.nav-link');
+                links.forEach(l => l.onclick = () => {
+                    // Original showSection logic is kept via HTML inline onclick, just add close sidebar
+                    // We need to preserve the original onclick.
+                    // Actually, simpler: let's just make the sidebar close function wrapper.
+                    sb.classList.remove('mobile-active');
+                    const pageId = l.getAttribute('onclick').match(/'([^']+)'/)[1];
+                    showSection(pageId, l);
+                });
+            }
+        };
+        
+        window.clearFeaturedSlot = async (slot) => {
             if(!confirm(`Deseja limpar o Slot ${slot}?`)) return;
-            let featuredData = JSON.parse(localStorage.getItem('alpha_featured_home') || '[{},{},{}]');
-            featuredData[slot-1] = { title: "", desc: "", img: "" };
-            localStorage.setItem('alpha_featured_home', JSON.stringify(featuredData));
-            loadFeaturedToInputs();
-            alert(`Slot ${slot} resetado. Clique em Sincronizar para aplicar.`);
+            try {
+                await setDoc(doc(db, "featured", `slot${slot}`), { 
+                    title: "", desc: "", img: "" 
+                });
+                loadFeaturedToInputs();
+                alert(`Slot ${slot} resetado. Clique em Sincronizar para aplicar.`);
+            } catch (e) {
+                console.error("Erro ao limpar slot:", e);
+                alert("Erro ao limpar slot.");
+            }
         };
 
-        function loadFeaturedToInputs() {
-            const featured = JSON.parse(localStorage.getItem('alpha_featured_home') || '[{},{},{}]');
-            featured.forEach((item, i) => {
-                const idx = i + 1;
-                const slotBox = document.getElementById(`slot-${idx}`);
-                const t = document.getElementById(`feat-t${idx}`);
-                const d = document.getElementById(`feat-d${idx}`);
-                
-                t.value = item.title || "";
-                d.value = item.desc || "";
-                
-                // Verifica se existe algo setado e destaca o box
-                if(item.title || item.img) {
-                    slotBox.classList.add('active-slot');
-                } else {
-                    slotBox.classList.remove('active-slot');
+        async function loadFeaturedToInputs() {
+            try {
+                for(let i=1; i<=3; i++) {
+                    const docSnap = await getDoc(doc(db, "featured", `slot${i}`));
+                    const item = docSnap.exists() ? docSnap.data() : { title: "", desc: "", img: "" };
+                    
+                    const slotBox = document.getElementById(`slot-${i}`);
+                    const t = document.getElementById(`feat-t${i}`);
+                    const d = document.getElementById(`feat-d${i}`);
+                    
+                    t.value = item.title || "";
+                    d.value = item.desc || "";
+                    
+                    // Verifica se existe algo setado e destaca o box
+                    if(item.title || item.img) {
+                        slotBox.classList.add('active-slot');
+                    } else {
+                        slotBox.classList.remove('active-slot');
+                    }
                 }
-            });
+            } catch (e) {
+                console.error("Erro ao carregar destaques:", e);
+            }
         }
 
         document.getElementById('btn-update-home').addEventListener('click', async () => {
             const btn = document.getElementById('btn-update-home');
             btn.disabled = true; btn.innerText = "ATUALIZANDO SERVIDOR...";
             
-            let featuredData = JSON.parse(localStorage.getItem('alpha_featured_home') || '[{},{},{}]');
-            
-            for (let i = 1; i <= 3; i++) {
-                const fileInput = document.getElementById(`feat-f${i}`);
-                const title = document.getElementById(`feat-t${i}`).value;
-                const desc = document.getElementById(`feat-d${i}`).value;
-                
-                let imageUrl = featuredData[i-1]?.img || "";
+            try {
+                for (let i = 1; i <= 3; i++) {
+                    const fileInput = document.getElementById(`feat-f${i}`);
+                    const title = document.getElementById(`feat-t${i}`).value;
+                    const desc = document.getElementById(`feat-d${i}`).value;
+                    
+                    // Recupera imagem atual do banco para não perder se não houver upload
+                    const oldSnap = await getDoc(doc(db, "featured", `slot${i}`));
+                    let imageUrl = oldSnap.exists() ? oldSnap.data().img : "";
 
-                if (fileInput.files[0]) {
-                    const storageRef = ref(storage, `destaques/feat_${i}_${Date.now()}`);
-                    await uploadBytes(storageRef, fileInput.files[0]);
-                    imageUrl = await getDownloadURL(storageRef);
+                    if (fileInput.files[0]) {
+                        const storageRef = ref(storage, `destaques/feat_${i}_${Date.now()}`);
+                        await uploadBytes(storageRef, fileInput.files[0]);
+                        imageUrl = await getDownloadURL(storageRef);
+                    }
+                    
+                    await setDoc(doc(db, "featured", `slot${i}`), { 
+                        title, desc, img: imageUrl 
+                    });
                 }
-                
-                featuredData[i-1] = { title, desc, img: imageUrl };
+                alert("Curadoria atualizada com sucesso e sincronizada em tempo real!");
+                loadFeaturedToInputs();
+            } catch (e) {
+                console.error(e);
+                alert("Erro ao atualizar curadoria.");
             }
             
-            localStorage.setItem('alpha_featured_home', JSON.stringify(featuredData));
             btn.disabled = false; btn.innerText = "SINCRONIZAR CURADORIA COM SERVIDOR";
-            loadFeaturedToInputs();
-            alert("Curadoria atualizada com sucesso!");
         });
 
         // --- LÓGICA DE GALERIA GERAL ---
@@ -472,47 +565,107 @@
             const btn = document.getElementById('btn-publish');
             btn.disabled = true;
             
-            let works = JSON.parse(localStorage.getItem('alpha_gallery') || '[]');
-            
-            for (let i = 0; i < selectedFiles.length; i++) {
-                status.innerText = `UPLOADING: ${i+1}/${selectedFiles.length}...`;
-                const storageRef = ref(storage, `galeria/${Date.now()}_${selectedFiles[i].name}`);
-                await uploadBytes(storageRef, selectedFiles[i]);
-                const url = await getDownloadURL(storageRef);
-                const title = document.querySelector(`.multi-title[data-index="${i}"]`).value;
-                works.push({ title: title || "OBRA_ALPHA", url, id: Date.now() + i });
+            try {
+                for (let i = 0; i < selectedFiles.length; i++) {
+                    status.innerText = `UPLOADING: ${i+1}/${selectedFiles.length}...`;
+                    const storageRef = ref(storage, `galeria/${Date.now()}_${selectedFiles[i].name}`);
+                    await uploadBytes(storageRef, selectedFiles[i]);
+                    const url = await getDownloadURL(storageRef);
+                    const title = document.querySelector(`.multi-title[data-index="${i}"]`).value;
+                    
+                    await addDoc(collection(db, "gallery"), {
+                        title: title || "OBRA_ALPHA",
+                        url: url,
+                        createdAt: Date.now()
+                    });
+                }
+                
+                status.innerText = "GALERIA ATUALIZADA NO CLOUD!";
+                selectedFiles = [];
+                setTimeout(() => { status.innerText = ""; }, 3000);
+                updatePreviews();
+                loadData();
+            } catch (e) {
+                console.error(e);
+                status.innerText = "ERRO: " + e.message;
             }
             
-            localStorage.setItem('alpha_gallery', JSON.stringify(works));
-            status.innerText = "GALERIA ATUALIZADA!";
-            selectedFiles = [];
-            setTimeout(() => { status.innerText = ""; }, 3000);
-            updatePreviews();
             btn.disabled = false;
-            loadData();
         });
 
-        // --- UTILITÁRIOS MANTIDOS ---
+        // --- UTILITÁRIOS MANTIDOS E DATA LOADING ---
 
-        function loadData() {
-            const works = JSON.parse(localStorage.getItem('alpha_gallery') || '[]');
-            const leads = JSON.parse(localStorage.getItem('alpha_leads') || '[]');
-            document.getElementById('stat-visits').innerText = localStorage.getItem('alpha_access') || 0;
-            document.getElementById('stat-works').innerText = works.length;
-            document.getElementById('stat-clients').innerText = leads.length;
+        async function loadData() {
+            try {
+                // Carrega Galeria
+                const worksQ = query(collection(db, "gallery"), orderBy("createdAt", "desc"));
+                const worksSnap = await getDocs(worksQ);
+                const works = [];
+                worksSnap.forEach(doc => works.push({ id: doc.id, ...doc.data() }));
 
-            document.getElementById('works-container').innerHTML = works.map((w, index) => `
-                <div class="work-card">
-                    <input type="checkbox" class="work-select" data-id="${w.id}" style="accent-color:var(--lime); margin-right:20px;">
-                    <img src="${w.url}" class="thumb">
-                    <div class="info">
-                        <div style="font-family:'JetBrains Mono'; font-size:0.9rem;">${w.title}</div>
-                        <div style="font-size:0.6rem; color:var(--gray);">ID: ${w.id}</div>
+                // Carrega Leads
+                const leadsQ = query(collection(db, "leads"), orderBy("data", "desc"));
+                const leadsSnap = await getDocs(leadsQ);
+                const leads = [];
+                leadsSnap.forEach(doc => leads.push({ id: doc.id, ...doc.data() }));
+
+                // Dashboard Stats
+                const systemDoc = await getDoc(doc(db, "system", "stats"));
+                const visits = systemDoc.exists() ? systemDoc.data().visits : 0;
+
+                document.getElementById('stat-visits').innerText = visits;
+                document.getElementById('stat-works').innerText = works.length;
+                document.getElementById('stat-clients').innerText = leads.length;
+
+                // Render Galeria List
+                document.getElementById('works-container').innerHTML = works.map((w) => `
+                    <div class="work-card">
+                        <input type="checkbox" class="work-select" data-id="${w.id}" style="accent-color:var(--lime); margin-right:20px;">
+                        <img src="${w.url}" class="thumb">
+                        <div class="info">
+                            <div style="font-family:'JetBrains Mono'; font-size:0.9rem;">${w.title}</div>
+                            <div style="font-size:0.6rem; color:var(--gray);">ID: ${w.id}</div>
+                        </div>
                     </div>
-                </div>
-            `).reverse().join('');
-            if(pieChart) { pieChart.data.datasets[0].data = [works.length, leads.length]; pieChart.update(); }
+                `).join('');
+
+                // Render Leads Table
+                const clientsList = document.getElementById('clients-list');
+                if(leads.length === 0) {
+                    clientsList.innerHTML = '<tr><td colspan="4" style="text-align:center;">NENHUM LEAD ENCONTRADO</td></tr>';
+                } else {
+                    clientsList.innerHTML = leads.map(l => `
+                        <tr>
+                            <td>${l.nome}</td>
+                            <td>${l.cidade}<br><span style="color:#555; font-size:0.7rem;">${l.tel}</span></td>
+                            <td style="max-width:300px; overflow:hidden; text-overflow:ellipsis;">${l.desc}</td>
+                            <td>
+                                <button onclick="toggleLeadDisplay('${l.id}', ${l.exibir})" style="padding:5px 10px; border-radius:4px; font-size:0.6rem; margin:0;" class="${l.exibir ? 'btn-approve active' : 'btn-action-cyber'}">
+                                    ${l.exibir ? 'PUBLICADO' : 'OCULTO'}
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+
+                if(pieChart) { pieChart.data.datasets[0].data = [works.length, leads.length]; pieChart.update(); }
+
+            } catch (e) {
+                console.error("Erro ao carregar dados:", e);
+            }
         }
+
+        window.toggleLeadDisplay = async (id, currentStatus) => {
+            // Ensure boolean
+            const statusBool = (currentStatus === true || currentStatus === "true");
+            try {
+                await setDoc(doc(db, "leads", id), { exibir: !statusBool }, { merge: true });
+                loadData();
+            } catch (e) {
+                console.error("Erro ao alterar status:", e);
+                alert("Erro ao atualizar status.");
+            }
+        };
 
         window.showSection = (id, element) => {
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active-section'));
@@ -531,19 +684,44 @@
         document.getElementById('btn-login').addEventListener('click', () => {
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-pass').value;
-            signInWithEmailAndPassword(auth, email, pass).catch(err => alert("ACESSO_NEGADO"));
+            signInWithEmailAndPassword(auth, email, pass).catch(err => {
+                alert("ACESSO_NEGADO: " + err.message);
+            });
         });
         document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
         document.getElementById('btn-manual-refresh').addEventListener('click', () => loadData());
-        window.deleteSelectedWorks = () => {
+        
+        window.deleteSelectedWorks = async () => {
             const selected = document.querySelectorAll('.work-select:checked');
             if(selected.length === 0) return;
-            let works = JSON.parse(localStorage.getItem('alpha_gallery') || '[]');
-            const ids = Array.from(selected).map(chk => Number(chk.getAttribute('data-id')));
-            localStorage.setItem('alpha_gallery', JSON.stringify(works.filter(w => !ids.includes(w.id))));
-            loadData();
+            
+            if(!confirm(`Deletar ${selected.length} item(s) permanentemente?`)) return;
+
+            try {
+                const deletePromises = Array.from(selected).map(chk => deleteDoc(doc(db, "gallery", chk.getAttribute('data-id'))));
+                await Promise.all(deletePromises); // Parallel deletion
+                alert("Itens deletados com sucesso.");
+                loadData();
+            } catch (e) {
+                console.error(e);
+                alert("Erro ao deletar itens.");
+            }
         };
-        function loadCoreSettings() {}
+        
+        document.getElementById('btn-save-settings').addEventListener('click', async () => {
+            const config = {
+                 insta: document.getElementById('cfg-instagram').value,
+                 phone: document.getElementById('cfg-phone').value,
+                 email: document.getElementById('cfg-email').value
+            };
+            try {
+                await setDoc(doc(db, "system", "config"), config);
+                alert("Configurações salvas na nuvem!");
+            } catch(e) {
+                console.error(e);
+                alert("Erro ao salvar config.");
+            }
+        });
 
     </script>
 </body>
