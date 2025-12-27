@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feira da Matemática - PIBID UFAL</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+
+    <style>
+        /* --- ESTILOS GERAIS E VARIÁVEIS --- */
+        :root {
+            --azul-escuro: #0f172a; 
+            --azul-principal: #1e40af; 
+            --azul-claro: #3b82f6; 
+            --azul-fundo: #eff6ff; 
+            --branco: #ffffff;
+            --cinza-texto: #333333;
+            --verde-sucesso: #10b981;
+            --vermelho-erro: #ef4444;
+            --amarelo-alerta: #f59e0b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        body { background-color: var(--azul-fundo); color: var(--cinza-texto); display: flex; flex-direction: column; min-height: 100vh; }
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+
+        /* --- MODAL DE ALERTA --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
+            z-index: 2000; display: none; justify-content: center; align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-box {
+            background: white; width: 90%; max-width: 400px; padding: 30px;
+            border-radius: 15px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            transform: scale(0.9); animation: scaleUp 0.3s ease forwards;
+            position: relative; border-top: 6px solid var(--azul-principal);
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleUp { to { transform: scale(1); } }
+
+        .modal-icon { font-size: 60px; margin-bottom: 15px; display: block; }
+        .modal-titulo { font-size: 1.4rem; font-weight: 700; color: var(--azul-escuro); margin-bottom: 10px; }
+        .modal-mensagem { font-size: 1rem; color: #666; margin-bottom: 25px; line-height: 1.5; }
+        
+        .modal-btn {
+            background: var(--azul-principal); color: white; border: none; padding: 12px 30px;
+            border-radius: 50px; font-size: 1rem; font-weight: 600; cursor: pointer;
+            transition: 0.2s; width: 100%; box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3);
+        }
+        .modal-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(30, 64, 175, 0.4); }
+
+        .tipo-sucesso .modal-icon { color: var(--verde-sucesso); }
+        .tipo-sucesso { border-color: var(--verde-sucesso); }
+        .tipo-sucesso .modal-btn { background: var(--verde-sucesso); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
+        
+        .tipo-erro .modal-icon { color: var(--vermelho-erro); }
+        .tipo-erro { border-color: var(--vermelho-erro); }
+        .tipo-erro .modal-btn { background: var(--vermelho-erro); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
+
+        .protocolo-box {
+            background: var(--azul-fundo); border: 2px dashed var(--azul-claro);
+            padding: 10px; margin: 10px 0 20px 0; border-radius: 8px;
+            font-family: monospace; font-size: 1.2rem; font-weight: bold; color: var(--azul-principal);
+        }
+
+        /* --- MODAL VISUALIZADOR DE FOTOS (LIGHTBOX) --- */
+        #modal-imagem-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 3000;
+            display: none; 
+            justify-content: center; align-items: center; flex-direction: column;
+            animation: fadeIn 0.3s ease;
+        }
+        .img-container-full {
+            position: relative;
+            max-width: 90%;
+            max-height: 85vh;
+        }
+        #img-ampliada {
+            width: auto; height: auto; max-width: 100%; max-height: 85vh;
+            border-radius: 5px; box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            animation: zoomIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #caption-ampliada {
+            color: white; margin-top: 15px; font-size: 1.1rem; text-align: center; font-weight: 500;
+        }
+        .btn-fechar-img {
+            position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; user-select: none; transition: 0.2s;
+        }
+        .btn-fechar-img:hover { color: var(--amarelo-alerta); transform: scale(1.1); }
+        @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* --- LÓGICA DE TROCA DE PÁGINAS --- */
+        .pagina-conteudo { display: none; animation: surgir 0.5s ease-out; padding-bottom: 40px; }
+        .pagina-conteudo.ativa { display: block; }
+        @keyframes surgir { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- LAYOUT GERAL --- */
+        .top-bar { background-color: var(--azul-escuro); color: var(--branco); padding: 8px 5%; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; }
+        header { background-color: var(--branco); padding: 15px 5%; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; }
+        .logo-area { display: flex; align-items: center; gap: 25px; }
+        .header-logo { height: 75px; width: auto; object-fit: contain; transition: transform 0.2s; }
+        .header-logo:hover { transform: scale(1.05); }
+        .site-title { border-left: 2px solid #ccc; padding-left: 20px; margin-left: 10px; }
+        .site-title h1 { color: var(--azul-principal); font-size: 1.6rem; text-transform: uppercase; letter-spacing: 1px; line-height: 1.1; }
+        .site-title p { color: #666; font-size: 0.85rem; font-weight: 600; margin-top: 5px; }
+
+        nav { background-color: white; width: 100%; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; padding: 10px 0; position: relative; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; justify-content: center; z-index: 100; }
+        nav ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 0; margin: 0; }
+        nav ul li a { cursor: pointer; display: block; padding: 10px 20px; color: #555; font-weight: 600; font-size: 0.95rem; transition: all 0.3s ease; text-transform: capitalize; border-radius: 6px; }
+        nav ul li a:hover:not(.menu-ativo) { background-color: #f3f4f6; color: var(--azul-principal); }
+        nav ul li a.menu-ativo { background-color: var(--azul-principal); color: white; }
+
+        .container-padrao { max-width: 1000px; margin: 40px auto; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        h2.titulo-secao { color: var(--azul-principal); border-bottom: 3px solid var(--azul-claro); padding-bottom: 10px; margin-bottom: 30px; font-size: 2rem; }
+        .text-content p { margin-bottom: 20px; line-height: 1.6; font-size: 1.1rem; color: #444; text-align: justify; }
+        .objectives-list { margin: 20px 0; padding-left: 20px; }
+        .objectives-list li { margin-bottom: 10px; list-style-type: disc; color: var(--azul-escuro); font-size: 1.05rem; }
+
+        .hero { width: 100%; height: 420px; background: linear-gradient(135deg, #002b5c, #00509d); display: flex; align-items: center; justify-content: center; color: white; text-align: center; position: relative; margin-top: 0; z-index: 1; }
+        .hero-content h2 { font-size: 2.8rem; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        .hero-content p { font-size: 1.2rem; margin-bottom: 20px; opacity: 0.9; }
+        .hero button { background-color: #fbbf24; color: #1a202c; border: none; padding: 15px 40px; border-radius: 50px; font-size: 1.1rem; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4); transition: 0.3s; }
+        .hero button:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(251, 191, 36, 0.6); }
+
+        .quick-access { padding: 0 5%; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 25px; margin-top: -60px; position: relative; z-index: 10; }
+        .card-icon { background: white; padding: 35px 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); text-align: center; border-top: 5px solid var(--azul-claro); transition: transform 0.3s ease; cursor: pointer; }
+        .card-icon:hover { transform: translateY(-8px); }
+        .card-icon h3 { color: var(--azul-principal); margin: 15px 0 5px 0; }
+        .icon-box { font-size: 2.5rem; color: var(--azul-claro); }
+
+        .news-section { padding: 80px 5%; }
+        .section-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
+        .section-title { font-size: 1.8rem; color: var(--azul-escuro); border-left: 6px solid var(--azul-principal); padding-left: 15px; }
+        .news-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; }
+        .news-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.3s; border: 1px solid #f0f0f0; }
+        .news-card:hover { box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .news-img { height: 200px; background-color: #cbd5e1; display: flex; align-items: center; justify-content: center; color: #64748b; }
+        .news-content { padding: 25px; }
+        .news-date { font-size: 0.75rem; color: var(--azul-claro); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        .news-content h4 { margin: 12px 0; color: var(--azul-escuro); font-size: 1.1rem; line-height: 1.4; }
+
+        /* --- PROGRAMAÇÃO --- */
+        .programacao-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px; align-items: start; }
+        .schedule-item { border-left: 5px solid var(--azul-claro); padding-left: 20px; margin-bottom: 30px; }
+        .time { font-weight: bold; color: var(--azul-principal); font-size: 1.1rem; }
+        .calendar-wrapper { background: #fff; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); width: 100%; border: 1px solid #eee; }
+        .calendar-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 25px 10px; }
+        .calendar-header .current-date { font-size: 1.2rem; font-weight: 600; color: var(--azul-escuro); text-transform: capitalize; }
+        .calendar-header .icons span { height: 35px; width: 35px; cursor: pointer; color: #878787; text-align: center; line-height: 35px; font-size: 1.5rem; border-radius: 50%; user-select: none; font-family: 'Material Symbols Rounded'; }
+        .calendar-header .icons span:hover { background: #f2f2f2; }
+        .calendar { padding: 15px; }
+        .calendar ul { display: flex; flex-wrap: wrap; list-style: none; text-align: center; }
+        .calendar .weeks { margin-bottom: 10px; }
+        .calendar .weeks li { font-weight: 500; width: calc(100% / 7); font-size: 0.9rem; }
+        .calendar .days li { z-index: 1; cursor: pointer; position: relative; width: calc(100% / 7); margin-top: 25px; font-size: 0.9rem; }
+        .calendar .days li.inactive { color: #aaa; }
+        .calendar .days li.active { color: #fff; }
+        .calendar .days li::before { position: absolute; content: ""; left: 50%; top: 50%; height: 35px; width: 35px; z-index: -1; border-radius: 50%; transform: translate(-50%, -50%); }
+        .calendar .days li.active::before { background: var(--azul-principal); }
+        .calendar .days li:not(.active):hover::before { background: #f2f2f2; }
+
+        /* --- GALERIA DE FOTOS --- */
+        .galeria-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; padding: 20px 0; }
+        .galeria-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.3s ease; cursor: pointer; }
+        .galeria-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
+        .galeria-img { width: 100%; height: 200px; object-fit: cover; }
+        .galeria-legenda { padding: 15px; font-size: 0.9rem; color: var(--azul-escuro); font-weight: 600; border-top: 1px solid #eee; }
+
+        /* --- INSCRIÇÃO --- */
+        .layout-inscricao { max-width: 1400px; margin: 40px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 1.8fr 1fr; gap: 25px; align-items: start; }
+        .coluna-esquerda-wrapper { display: flex; flex-direction: column; gap: 25px; }
+        .bloco-regras { background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 5px solid var(--azul-principal); }
+        .bloco-regras h3 { color: var(--azul-escuro); margin-bottom: 15px; font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .regras-lista li { margin-bottom: 10px; font-size: 0.9rem; border-bottom: 1px dashed #eee; padding-bottom: 5px; color: #555; }
+        .regras-lista li strong { color: var(--azul-principal); }
+        .mural-observacoes { background-color: #fff9c4; border: 1px solid #fbc02d; padding: 25px; border-radius: 10px; box-shadow: 2px 4px 10px rgba(0,0,0,0.05); position: relative; }
+        .mural-observacoes::before { content: '📌'; position: absolute; top: -12px; right: -10px; font-size: 1.8rem; }
+        .mural-observacoes h4 { color: #f57f17; margin-bottom: 15px; text-transform: uppercase; border-bottom: 2px solid #fdd835; padding-bottom: 5px; display: inline-block; font-size: 1rem; }
+        .mural-observacoes p { font-size: 0.9rem; color: #555; line-height: 1.4; margin-bottom: 10px; }
+        .caixa-branca-central { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .bloco-submissao { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-top: 5px solid var(--verde-sucesso); transition: all 0.3s ease; }
+        .bloco-submissao.bloqueado { opacity: 0.6; pointer-events: none; filter: grayscale(1); position: relative; }
+        .aviso-bloqueio { display: none; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; text-align: center; font-size: 0.8rem; margin-bottom: 15px; }
+        .bloco-submissao.bloqueado .aviso-bloqueio { display: block; }
+        .bloco-submissao h3 { color: #065f46; font-size: 1.1rem; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .bloco-submissao label { font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 5px; display: block; margin-top: 10px;}
+        .bloco-submissao input, .bloco-submissao textarea { border: 1px solid #ccc; background: #fafafa; }
+        .bloco-submissao input:focus, .bloco-submissao textarea:focus { border-color: var(--verde-sucesso); background: white; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+        .btn-download { display: block; width: 100%; padding: 10px; margin-bottom: 10px; font-size: 0.85rem; background: #eee; border: none; border-radius: 4px; cursor: pointer; text-align: left; }
+        .btn-download:hover { background: #ddd; }
+
+        /* --- CONTATO --- */
+        .layout-contato { display: grid; grid-template-columns: 1fr 1.5fr; gap: 40px; max-width: 1200px; margin: 0 auto; }
+        .social-card { display: flex; align-items: center; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; text-decoration: none; color: #333; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); border-left: 6px solid transparent; position: relative; top: 0; }
+        .social-card:hover { transform: translateY(-5px); box-shadow: 0 12px 20px rgba(0,0,0,0.15), 0 5px 10px rgba(0,0,0,0.05); }
+        .card-instagram { border-left-color: #E1306C; } .card-youtube { border-left-color: #FF0000; } .card-whatsapp { border-left-color: #25D366; } .card-facebook { border-left-color: #1877F2; }
+        .social-icon { width: 32px; height: 32px; margin-right: 15px; } .social-info strong { display: block; font-size: 1.05rem; color: var(--azul-escuro); } .social-info span { font-size: 0.85rem; color: #666; }
+        .coluna-form-contato { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 15px rgba(0,0,0,0.05); }
+        form { display: flex; flex-direction: column; gap: 15px; }
+        input, select, textarea { padding: 12px; border: 1px solid #ccc; border-radius: 5px; width: 100%; font-size: 1rem; transition: 0.3s; }
+        input:focus, select:focus, textarea:focus { border-color: var(--azul-claro); outline: none; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        .campo-preenchido { border-color: var(--verde-sucesso); background-color: #f0fdf4; }
+        button.btn-acao { background: var(--azul-principal); color: white; padding: 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 1.1rem; }
+        button.btn-acao:hover { background: var(--azul-claro); }
+
+        footer { background-color: var(--azul-escuro); color: white; padding: 60px 5% 20px 5%; margin-top: auto; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 50px; margin-bottom: 40px; }
+        footer h4 { color: var(--azul-claro); margin-bottom: 20px; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; }
+        .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; text-align: center; font-size: 0.85rem; color: #94a3b8; }
+
+        @media (max-width: 1100px) { .layout-inscricao { grid-template-columns: 1fr; max-width: 800px; } .coluna-esquerda-wrapper { margin-bottom: 20px; } .programacao-grid { grid-template-columns: 1fr; } .layout-contato { grid-template-columns: 1fr; } .bloco-regras, .bloco-submissao, .mural-observacoes { margin-bottom: 20px; } }
+        @media (max-width: 900px) { header { justify-content: center; text-align: center; gap: 20px; } .logo-area { flex-wrap: wrap; justify-content: center; } .site-title { border-left: none; padding-left: 0; margin-left: 0; margin-top: 15px; width: 100%; } .hero-content h2 { font-size: 1.8rem; } .container-padrao, .caixa-branca-central, .coluna-form-contato { padding: 20px; } .footer-grid { grid-template-columns: 1fr; text-align: center; } nav ul { flex-direction: row; flex-wrap: wrap; } nav ul li a { padding: 8px 12px; font-size: 0.85rem; } }
+        
+        /* Estilo para Radio Buttons de Busca */
+        .radio-busca {
+            display: flex; justify-content: center; gap: 20px; margin-bottom: 15px;
+        }
+        .radio-busca label { cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: 500; color: #555; }
+        .radio-busca input { width: auto; margin: 0; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div id="modal-global" class="modal-overlay">
+        <div class="modal-box" id="modal-box-style">
+            <span class="material-symbols-rounded modal-icon" id="modal-icon">check_circle</span>
+            <div class="modal-titulo" id="modal-titulo">Título</div>
+            <div class="modal-mensagem" id="modal-msg">Mensagem aqui</div>
+            <div id="modal-protocolo-container" style="display:none;"></div>
+            <button class="modal-btn" onclick="fecharModal()">ENTENDI</button>
+        </div>
+    </div>
+
+    <div id="modal-imagem-overlay" onclick="fecharModalImagem(event)">
+        <span class="material-symbols-rounded btn-fechar-img" onclick="fecharModalImagem(event)">close</span>
+        <div class="img-container-full">
+            <img id="img-ampliada" src="" alt="Imagem ampliada">
+            <div id="caption-ampliada"></div>
+        </div>
+    </div>
+
+    <div class="top-bar">
+        <span>Portal de Transparência e Eventos Acadêmicos</span>
+        <div><span>Acessibilidade</span> | <span>Contraste</span></div>
+    </div>
+
+    <header>
+        <div class="logo-area">
+            <img src="ufal.webp" alt="Brasão UFAL" class="header-logo">   
+            <img src="brasaoteotoniovilela.png" alt="Logo PIBID" class="header-logo">   
+            <img src="pibid.webp" alt="Brasão Teotônio Vilela" class="header-logo">  
+            <div class="site-title">
+                <h1>FEIRA DA MATEMÁTICA</h1>
+                <p>PIBID - Universidade Federal de Alagoas</p>
+            </div>
+        </div>
+        <div style="display: flex; margin-top: 10px;">
+            <input type="text" placeholder="Pesquisar..." style="padding: 10px; border: 1px solid #ddd; border-radius: 4px 0 0 4px; width: 200px;">
+            <button style="padding: 10px 20px; background: var(--azul-principal); color: white; border: none; border-radius: 0 4px 4px 0; cursor: pointer;">🔍</button>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a onclick="navegar('inicio')" id="btn-inicio" class="menu-ativo">Início</a></li>
+            <li><a onclick="navegar('a-feira')" id="btn-a-feira">A Feira</a></li>
+            <li><a onclick="navegar('programacao')" id="btn-programacao">Programação</a></li>
+            <li><a onclick="navegar('galeria')" id="btn-galeria">Galeria</a></li>
+            <li><a onclick="navegar('inscricoes')" id="btn-inscricoes">Inscrições</a></li>
+            <li><a onclick="navegar('certificados')" id="btn-certificados">Certificados</a></li>
+            <li><a onclick="navegar('contato')" id="btn-contato">Contato</a></li>
+        </ul>
+    </nav>
+
+    <div id="inicio" class="pagina-conteudo ativa">
+        <section class="hero">
+            <div class="hero-content">
+                <h2>MATEMÁTICA EM FOCO</h2>
+                <p>Conectando saberes, inovação e educação pública em Alagoas.</p>
+                <button onclick="navegar('inscricoes')">INSCREVA-SE NO EVENTO</button>
+            </div>
+        </section>
+        <section class="quick-access">
+            <div class="card-icon" onclick="navegar('inscricoes')"><div class="icon-box">📝</div><h3>Edital 2025</h3><p>Regras para submissão</p></div>
+            <div class="card-icon" onclick="navegar('contato')"><div class="icon-box">📍</div><h3>Localização</h3><p>Como chegar ao evento</p></div>
+            <div class="card-icon" onclick="window.location.href='admin.html'"><div class="icon-box">👥</div><h3>Monitoria</h3><p>Seja um voluntário</p></div>
+            <div class="card-icon"><div class="icon-box">📊</div><h3>Resultados</h3><p>Trabalhos aprovados</p></div>
+        </section>
+        <section class="news-section">
+            <div class="section-header">
+                <h2 class="section-title">Destaques e Notícias</h2>
+                <a href="#" style="color: var(--azul-claro); font-weight: bold;">Ver todas as notícias &rarr;</a>
+            </div>
+            <div class="news-grid">
+                <article class="news-card">
+                    <div class="news-img">FOTO DO EVENTO</div>
+                    <div class="news-content"><span class="news-date">05 Dez 2025</span><h4>Parceria firmada com a Câmara Municipal</h4><p>O apoio institucional fortalece a divulgação da matemática no município de Teotônio Vilela.</p></div>
+                </article>
+                <article class="news-card">
+                    <div class="news-img">FOTO PALESTRA</div>
+                    <div class="news-content"><span class="news-date">03 Dez 2025</span><h4>Confirmada a presença de palestrantes da UFAL</h4><p>Professores do Instituto de Matemática trarão oficinas inéditas para os alunos.</p></div>
+                </article>
+                <article class="news-card">
+                    <div class="news-img">FOTO OFICINA</div>
+                    <div class="news-content"><span class="news-date">01 Dez 2025</span><h4>Oficinas de Lógica e Matemática</h4><p>Aprenda como integrar tecnologias no ensino básico com kits de robótica educacional.</p></div>
+                </article>
+            </div>
+        </section>
+    </div>
+
+    <div id="a-feira" class="pagina-conteudo">
+        <div class="container-padrao">
+            <h2 class="titulo-secao">Sobre a Feira da Matemática</h2>
+            <div class="text-content">
+                <p>A <strong>Feira da Matemática</strong> é um evento acadêmico e cultural promovido pelo Programa Institucional de Bolsa de Iniciação à Docência (PIBID) da Universidade Federal de Alagoas (UFAL).</p>
+                <p>Realizada em parceria com a Câmara Municipal de Teotônio Vilela, a feira busca integrar a universidade com a comunidade escolar da rede pública.</p>
+                <h3 style="color: var(--azul-escuro); margin-top: 30px; margin-bottom: 15px;">Objetivos do Evento</h3>
+                <ul class="objectives-list">
+                    <li>Estimular o interesse pela matemática através de atividades lúdicas e práticas.</li>
+                    <li>Divulgar os trabalhos desenvolvidos pelos bolsistas do PIBID nas escolas parceiras.</li>
+                    <li>Promover a formação continuada de professores da rede municipal.</li>
+                    <li>Incentivar a produção científica e acadêmica na área de Educação Matemática.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="programacao" class="pagina-conteudo">
+        <div class="container-padrao" style="max-width: 1200px;">
+            <h2 class="titulo-secao">Programação do Evento</h2>
+            <div class="programacao-grid">
+                <div>
+                    <div class="schedule-item"><div class="time">08:00 - 09:00</div><div><strong>Credenciamento e Entrega de Kits</strong><br>Recepção dos participantes no hall.</div></div>
+                    <div class="schedule-item"><div class="time">09:00 - 10:30</div><div><strong>Mesa de Abertura</strong><br>Presença do Reitor da UFAL e autoridades.</div></div>
+                    <div class="schedule-item"><div class="time">10:30 - 12:00</div><div><strong>Palestra Magna</strong><br>Dr. João da Silva (IM/UFAL)</div></div>
+                    <div class="schedule-item"><div class="time">14:00 - 17:00</div><div><strong>Apresentação de Trabalhos</strong><br>Salas temáticas 01 a 10.</div></div>
+                </div>
+                <div>
+                    <div class="calendar-wrapper">
+                        <header class="calendar-header">
+                            <p class="current-date"></p>
+                            <div class="icons">
+                                <span id="prev" class="material-symbols-rounded">&lt;</span>
+                                <span id="next" class="material-symbols-rounded">&gt;</span>
+                            </div>
+                        </header>
+                        <div class="calendar">
+                            <ul class="weeks"><li>Dom</li> <li>Seg</li> <li>Ter</li> <li>Qua</li> <li>Qui</li> <li>Sex</li> <li>Sab</li></ul>
+                            <ul class="days"></ul>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px;">
+                        <p style="font-size: 0.9rem; color: #666;">ℹ️ Use as setas para navegar pelos meses de 2026.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="galeria" class="pagina-conteudo">
+        <div class="container-padrao" style="max-width: 1200px;">
+            <h2 class="titulo-secao">Galeria de Momentos</h2>
+            <p style="margin-bottom: 20px;">Confira as fotos das edições anteriores e dos projetos desenvolvidos nas escolas parceiras.</p>
+            <div id="galeria-container" class="galeria-grid">
+                <p style="grid-column: 1/-1; text-align: center; padding: 40px; color: #666;">Carregando fotos da galeria...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="inscricoes" class="pagina-conteudo">
+        <div class="layout-inscricao">
+            <div class="coluna-esquerda-wrapper">
+                <div class="bloco-regras">
+                    <h3>📜 Regras Principais</h3>
+                    <ul class="regras-lista">
+                        <li><strong>Gratuito:</strong> Sem taxas.</li>
+                        <li><strong>Vagas:</strong> Limitadas.</li>
+                        <li><strong>Documento:</strong> RG/CPF.</li>
+                        <li><strong>Certificado:</strong> 75% freq.</li>
+                        <li><strong>Chegada:</strong> 30min antes.</li>
+                    </ul>
+                </div>
+                <div class="mural-observacoes">
+                    <h4>MURAL DE AVISOS</h4>
+                    <p>📢 <strong>Chegue cedo!</strong><br>Início às 08h.</p>
+                    <p style="margin-top: 10px;">💧 <strong>Hidrate-se:</strong><br>Traga sua garrafa.</p>
+                    <p style="margin-top: 10px;">♿ <strong>Acessibilidade:</strong><br>Rampas no local.</p>
+                </div>
+            </div>
+            <div class="caixa-branca-central">
+                <h2 class="titulo-secao" style="margin-top: 0;">Ficha de Inscrição</h2>
+                <p style="margin-bottom: 25px; color: #666;">Os campos com <span style="color: var(--vermelho-erro)">*</span> são obrigatórios:</p>
+                <form id="form-inscricao">
+                    <label>Nome Completo: <span style="color: var(--vermelho-erro)">*</span></label>
+                    <input type="text" id="inp-nome" placeholder="Digite seu nome completo" onkeyup="verificarFormulario()">
+                    <div style="display: flex; gap: 5px; align-items: center;">
+                        <div style="flex: 1;">
+                            <label>CPF:</label>
+                            <input type="text" id="inp-cpf" placeholder="000.000.000-00" onkeyup="verificarFormulario()">
+                        </div>
+                        <div style="font-weight: bold; color: #666; font-size: 0.9rem; padding-top: 25px;">( ou )</div>
+                        <div style="flex: 1;">
+                            <label>Telefone/WhatsApp:</label>
+                            <input type="text" id="inp-fone" placeholder="(00) 00000-0000" onkeyup="verificarFormulario()">
+                        </div>
+                    </div>
+                    <label>Onde estuda: <span style="color: var(--vermelho-erro)">*</span></label>
+                    <input type="text" id="inp-inst" placeholder="Escola ou Universidade" onkeyup="verificarFormulario()">
+                    <label>Tipo de Participação: <span style="color: var(--vermelho-erro)">*</span></label>
+                    <select id="inp-tipo" onchange="verificarFormulario()">
+                        <option value="">Selecione...</option>
+                        <option value="Ouvinte">Ouvinte</option>
+                        <option value="Apresentador">Apresentador de Trabalho</option>
+                        <option value="Monitor">Monitor Voluntário</option>
+                    </select>
+                    <div id="div-email" style="display: none;">
+                        <label>Email: <span style="color: var(--vermelho-erro)">*</span> <small>(Obrigatório para monitores)</small></label>
+                        <input type="email" id="inp-email" placeholder="seuemail@exemplo.com" onkeyup="verificarFormulario()">
+                    </div>
+                    <button type="button" id="btn-confirmar-inscricao" class="btn-acao" style="margin-top: 20px; opacity: 0.5; pointer-events: none;" onclick="salvarInscricaoNoFirebase()">CONFIRMAR INSCRIÇÃO</button>
+                </form>
+            </div>
+            
+            <div class="bloco-submissao bloqueado" id="bloco-submissao">
+                <div class="aviso-bloqueio" id="msg-aviso">🔒 Confirme a inscrição para liberar</div>
+                <h3>📤 Dados do Trabalho</h3>
+                <p style="font-size: 0.9rem; color: #666; margin-bottom: 20px;">Preencha os dados abaixo para submeter seu trabalho.</p>
+                <form id="form-trabalho">
+                    <label>Título do Trabalho:</label>
+                    <input type="text" id="inp-titulo-trab" placeholder="Ex: O uso de jogos no ensino...">
+                    <label>Tema:</label>
+                    <input type="text" id="inp-tema-trab" placeholder="Ex: Educação Matemática, Robótica...">
+                    <label>Resumo (Até 500 palavras):</label>
+                    <textarea id="inp-resumo-trab" rows="8" placeholder="Escreva aqui o resumo do seu trabalho..."></textarea>
+                    <button type="button" class="btn-acao" style="width: 100%; margin-top: 15px; background-color: var(--verde-sucesso);" onclick="salvarDadosTrabalho()">ENVIAR TRABALHO</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="certificados" class="pagina-conteudo">
+        <div class="container-padrao" style="max-width: 600px; text-align: center;">
+            <h2 class="titulo-secao">Emitir Certificado</h2>
+            <p style="margin-bottom: 25px;">Escolha o método de busca e digite seus dados para verificar se o certificado está disponível.</p>
+            
+            <div class="radio-busca">
+                <label><input type="radio" name="tipo-busca" value="cpf" checked onchange="mudarPlaceholder()"> Buscar por CPF</label>
+                <label><input type="radio" name="tipo-busca" value="nome" onchange="mudarPlaceholder()"> Buscar por Nome</label>
+            </div>
+
+            <input type="text" id="cert-input" placeholder="000.000.000-00" style="margin: 20px 0; text-align: center; font-size: 1.2rem; letter-spacing: 2px;">
+            
+            <button class="btn-acao" id="btn-emitir-cert" onclick="gerarCertificado()">BAIXAR CERTIFICADO PDF</button>
+            <p id="msg-cert" style="margin-top: 15px; font-weight: bold; display: none;"></p>
+        </div>
+    </div>
+
+    <div id="contato" class="pagina-conteudo">
+        <div class="container-padrao" style="max-width: 1200px; background: transparent; box-shadow: none; padding: 0;"> 
+            <h2 class="titulo-secao" style="margin-bottom: 40px; padding: 20px; background: white; border-radius: 10px;">Fale Conosco</h2>
+            <div class="layout-contato">
+                <div class="coluna-social">
+                    <h3 style="color: var(--azul-escuro); margin-bottom: 20px; font-size: 1.1rem; padding-left: 10px;">Nossas Redes e Canais</h3>
+                    <a href="https://instagram.com/ufaloficial" target="_blank" class="social-card card-instagram">
+                        <svg class="social-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke: #E1306C;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                        <div class="social-info"><strong>Instagram UFAL</strong><span>@ufaloficial</span></div>
+                    </a>
+                    <a href="https://youtube.com/ufaloficial" target="_blank" class="social-card card-youtube">
+                        <svg class="social-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke: #FF0000;"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.25z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" style="fill: #FF0000; stroke: none;"></polygon></svg>
+                        <div class="social-info"><strong>YouTube UFAL</strong><span>Canal Oficial</span></div>
+                    </a>
+                    <a href="#" class="social-card card-instagram">
+                        <svg class="social-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke: #E1306C;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                        <div class="social-info"><strong>Instagram PIBID</strong><span>@pibidmatufal</span></div>
+                    </a>
+                    <a href="#" class="social-card card-whatsapp">
+                        <svg class="social-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke: #25D366;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                        <div class="social-info"><strong>WhatsApp</strong><span>Atendimento</span></div>
+                    </a>
+                    <a href="#" class="social-card card-facebook">
+                        <svg class="social-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke: #1877F2;"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+                        <div class="social-info"><strong>Facebook</strong><span>Página Oficial</span></div>
+                    </a>
+                </div>
+                <div class="coluna-form-contato">
+                    <h3 style="color: var(--azul-escuro); margin-bottom: 20px; font-size: 1.1rem;">Envie sua Mensagem</h3>
+                    <form>
+                        <label>Nome:</label><input type="text" placeholder="Seu nome">
+                        <label>Email:</label><input type="email" placeholder="seu@email.com">
+                        <label>Mensagem:</label><textarea rows="5" placeholder="Digite sua dúvida..."></textarea>
+                        <button class="btn-acao">ENVIAR MENSAGEM</button>
+                    </form>
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                        <p><strong>Localização:</strong> Câmara Municipal de Teotônio Vilela - AL</p>
+                        <p><strong>Email:</strong> contato@pibidmat.ufal.br</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-grid">
+            <div><h4>Realização</h4><p>UFAL - Campus A.C. Simões</p></div>
+            <div><h4>Links Rápidos</h4><ul><li><a style="cursor: pointer;" onclick="navegar('inscricoes')">Inscrever-se</a></li><li><a style="cursor: pointer;" onclick="navegar('certificados')">Certificados</a></li></ul></div>
+            <div><h4>Atendimento</h4><p>coord.pibid.mat@ufal.br</p></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2025 Feira da Matemática - Apoio: Câmara Municipal de Teotônio Vilela e UFAL.</p></div>
+    </footer>
+
+    <script>
+        function navegar(idPagina) {
+            var paginas = document.querySelectorAll('.pagina-conteudo');
+            paginas.forEach(function(pag) { pag.classList.remove('ativa'); });
+            var botoes = document.querySelectorAll('nav ul li a');
+            botoes.forEach(function(btn) { btn.classList.remove('menu-ativo'); });
+            var paginaAlvo = document.getElementById(idPagina);
+            if (paginaAlvo) paginaAlvo.classList.add('ativa');
+            var botaoAlvo = document.getElementById('btn-' + idPagina);
+            if (botaoAlvo) botaoAlvo.classList.add('menu-ativo');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function verificarFormulario() {
+            const nome = document.getElementById('inp-nome');
+            const cpf = document.getElementById('inp-cpf');
+            const fone = document.getElementById('inp-fone');
+            const email = document.getElementById('inp-email');
+            const inst = document.getElementById('inp-inst');
+            const tipo = document.getElementById('inp-tipo');
+            const btnConfirmar = document.getElementById('btn-confirmar-inscricao');
+            const divEmail = document.getElementById('div-email');
+            
+            if (tipo.value === "Monitor") { divEmail.style.display = "block"; } 
+            else { divEmail.style.display = "none"; email.value = ""; }
+
+            const camposBasicosOk = nome.value.trim() !== "" && inst.value.trim() !== "" && tipo.value !== "";
+            const documentoOk = cpf.value.trim() !== "" || fone.value.trim() !== "";
+            let emailOk = true;
+            if (tipo.value === "Monitor") { emailOk = email.value.trim() !== ""; }
+
+            let formularioValido = camposBasicosOk && documentoOk && emailOk;
+
+            [nome, cpf, fone, email, inst, tipo].forEach(campo => {
+                if(campo.value.trim() !== "") campo.classList.add('campo-preenchido');
+                else campo.classList.remove('campo-preenchido');
+            });
+
+            if (formularioValido) {
+                btnConfirmar.style.opacity = "1";
+                btnConfirmar.style.pointerEvents = "auto";
+                btnConfirmar.innerText = "CONFIRMAR INSCRIÇÃO";
+            } else {
+                btnConfirmar.style.opacity = "0.5";
+                btnConfirmar.style.pointerEvents = "none";
+                btnConfirmar.innerText = "Preencha os campos obrigatórios (*)";
+            }
+        }
+
+        // --- SISTEMA DE MODAL ---
+        function exibirModal(tipo, titulo, mensagem, protocolo = null) {
+            const modal = document.getElementById('modal-global');
+            const box = document.getElementById('modal-box-style');
+            const icon = document.getElementById('modal-icon');
+            const tit = document.getElementById('modal-titulo');
+            const msg = document.getElementById('modal-msg');
+            const protContainer = document.getElementById('modal-protocolo-container');
+
+            box.className = 'modal-box';
+            
+            if (tipo === 'sucesso') {
+                box.classList.add('tipo-sucesso');
+                icon.innerText = 'check_circle';
+                icon.style.color = 'var(--verde-sucesso)';
+            } else if (tipo === 'erro') {
+                box.classList.add('tipo-erro');
+                icon.innerText = 'error';
+                icon.style.color = 'var(--vermelho-erro)';
+            } else {
+                icon.innerText = 'info';
+                icon.style.color = 'var(--azul-principal)';
+            }
+
+            tit.innerText = titulo;
+            msg.innerText = mensagem;
+
+            if (protocolo) {
+                protContainer.style.display = 'block';
+                protContainer.innerHTML = `<div class="protocolo-box">PROTOCOLO: ${protocolo}</div><small>Salve este número!</small>`;
+            } else {
+                protContainer.style.display = 'none';
+            }
+            modal.style.display = 'flex';
+        }
+
+        function fecharModal() { document.getElementById('modal-global').style.display = 'none'; }
+
+        // --- FUNÇÕES LIGHTBOX ---
+        function abrirImagem(url, legenda) {
+            const modalImg = document.getElementById('modal-imagem-overlay');
+            const img = document.getElementById('img-ampliada');
+            const caption = document.getElementById('caption-ampliada');
+            img.src = url;
+            caption.innerText = legenda || '';
+            modalImg.style.display = 'flex';
+        }
+
+        function fecharModalImagem(e) {
+            if (e.target.id === 'modal-imagem-overlay' || e.target.classList.contains('btn-fechar-img')) {
+                document.getElementById('modal-imagem-overlay').style.display = 'none';
+                document.getElementById('img-ampliada').src = '';
+            }
+        }
+
+        // --- FUNÇÃO DE PLACEHOLDER CERTIFICADO ---
+        function mudarPlaceholder() {
+            const tipo = document.querySelector('input[name="tipo-busca"]:checked').value;
+            const input = document.getElementById('cert-input');
+            if(tipo === 'cpf') {
+                input.placeholder = "000.000.000-00";
+            } else {
+                input.placeholder = "Digite seu Nome Completo";
+            }
+        }
+
+        // Script do Calendário
+        const daysTag = document.querySelector(".days"), currentDate = document.querySelector(".current-date"), prevNextIcon = document.querySelectorAll(".icons span");
+        let date = new Date(), currYear = 2026, currMonth = 0; 
+        const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        const renderCalendar = () => {
+            let firstDayofMonth = new Date(currYear, currMonth, 1).getDay(), lastDateofMonth = new Date(currYear, currMonth + 1, 0).getDate(), lastDayofMonth = new Date(currYear, currMonth, lastDateofMonth).getDay(), lastDateofLastMonth = new Date(currYear, currMonth, 0).getDate(); 
+            let liTag = "";
+            for (let i = firstDayofMonth; i > 0; i--) { liTag += `<li class="inactive">${lastDateofLastMonth - i + 1}</li>`; }
+            for (let i = 1; i <= lastDateofMonth; i++) { 
+                let isToday = i === new Date().getDate() && currMonth === new Date().getMonth() && currYear === new Date().getFullYear() ? "active" : "";
+                liTag += `<li class="${isToday}">${i}</li>`; 
+            }
+            for (let i = lastDayofMonth; i < 6; i++) { liTag += `<li class="inactive">${i - lastDayofMonth + 1}</li>` }
+            currentDate.innerText = `${months[currMonth]} ${currYear}`; 
+            daysTag.innerHTML = liTag;
+        }
+        renderCalendar();
+        prevNextIcon.forEach(icon => { icon.addEventListener("click", () => { currMonth = icon.id === "prev" ? currMonth - 1 : currMonth + 1; if(currMonth < 0 || currMonth > 11) { date = new Date(currYear, currMonth, new Date().getDate()); currYear = date.getFullYear(); currMonth = date.getMonth(); } else { date = new Date(); } renderCalendar(); }); });
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, doc, setDoc, updateDoc, getDocs, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAO6azVpX988Vwu___-pp9c0oprqPThMlQ",
+            authDomain: "matematica-em-foco.firebaseapp.com",
+            projectId: "matematica-em-foco",
+            storageBucket: "matematica-em-foco.firebasestorage.app",
+            messagingSenderId: "1031540454030",
+            appId: "1:1031540454030:web:af79c9407ffc7dfd694fdf",
+            measurementId: "G-0TGT0E9YL8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        // --- GALERIA COM LIGHTBOX ---
+        window.carregarGaleria = async function() {
+            const container = document.getElementById('galeria-container');
+            
+            try {
+                console.log("Iniciando carregamento da galeria...");
+                let q;
+                try {
+                    q = query(collection(db, "galeria"), orderBy("data_upload", "desc"));
+                } catch(e) {
+                    console.warn("Índice de ordenação ausente, carregando sem ordem.");
+                    q = collection(db, "galeria");
+                }
+
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #666;">Nenhuma foto publicada na galeria ainda.</p>`;
+                    return;
+                }
+
+                container.innerHTML = ''; 
+                let contador = 0;
+
+                querySnapshot.forEach((doc) => {
+                    const dados = doc.data();
+                    if(dados.url) {
+                        const card = `
+                            <div class="galeria-card" onclick="abrirImagem('${dados.url}', '${dados.titulo || ''}')">
+                                <img src="${dados.url}" alt="${dados.titulo || 'Foto'}" class="galeria-img">
+                                <div class="galeria-legenda">${dados.titulo || 'Sem legenda'}</div>
+                            </div>
+                        `;
+                        container.innerHTML += card;
+                        contador++;
+                    }
+                });
+                console.log(`Total de ${contador} fotos carregadas.`);
+
+            } catch (erro) {
+                console.error("Erro na galeria:", erro);
+                container.innerHTML = '<p style="color: var(--vermelho-erro); text-align:center; grid-column: 1/-1;">Erro ao carregar imagens.</p>';
+            }
+        }
+        window.carregarGaleria();
+
+        // --- SISTEMA DE CERTIFICADOS (CPF ou NOME) ---
+        window.gerarCertificado = async function() {
+            const tipoBusca = document.querySelector('input[name="tipo-busca"]:checked').value;
+            const valorInput = document.getElementById('cert-input').value.trim();
+            const btn = document.getElementById('btn-emitir-cert');
+            const msg = document.getElementById('msg-cert');
+
+            if(!valorInput) {
+                exibirModal('erro', 'Campo Obrigatório', 'Digite o CPF ou o Nome para buscar.');
+                return;
+            }
+
+            btn.innerText = "Verificando...";
+            btn.disabled = true;
+            msg.style.display = 'none';
+
+            try {
+               
+let q;
+if (tipoBusca === 'cpf') {
+    q = query(collection(db, "inscricoes"), where("cpf", "==", valorInput));
+} else {
+    q = query(collection(db, "inscricoes"), where("nome_busca", "==", valorInput.toLowerCase()));
+}
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    throw new Error(tipoBusca === 'cpf' ? "CPF não encontrado." : "Nome não encontrado. Digite exatamente igual à inscrição.");
+                }
+
+                const dados = querySnapshot.docs[0].data();
+
+                if (!dados.certificado_liberado) {
+                    throw new Error("O certificado ainda não foi liberado pela organização. Aguarde o encerramento do evento.");
+                }
+
+                btn.innerText = "Gerando PDF...";
+                await criarPDF(dados.nome, dados.tipo_participacao);
+                
+                exibirModal('sucesso', 'Sucesso!', 'O download do seu certificado iniciará em instantes.');
+
+            } catch (erro) {
+                console.error(erro);
+                exibirModal('erro', 'Atenção', erro.message);
+            } finally {
+                btn.innerText = "BAIXAR CERTIFICADO PDF";
+                btn.disabled = false;
+            }
+        }
+
+        async function criarPDF(nomeParticipante, tipoParticipacao) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4');
+            const width = doc.internal.pageSize.getWidth();
+            const height = doc.internal.pageSize.getHeight();
+
+            const imgUrl = "modelo_certificado.png"; 
+            const img = new Image();
+            img.src = imgUrl;
+
+            return new Promise((resolve, reject) => {
+                img.onload = function() {
+                    doc.addImage(img, 'PNG', 0, 0, width, height);
+                    doc.setFont("times", "italic");
+                    doc.setFontSize(22);
+                    doc.setTextColor(30, 64, 175);
+                    doc.text(nomeParticipante.toUpperCase(), width / 2 + 55, 120, { align: 'center' });
+                    doc.setFont("helvetica", "italic");
+                    doc.setFontSize(14);
+                    doc.setTextColor(50, 50, 50);
+                    doc.text(`Participação registrada como: ${tipoParticipacao}`, width / 2 + 70, 127, { align: 'center' });
+                    doc.save(`Certificado_${nomeParticipante}.pdf`);
+                    resolve();
+                };
+                img.onerror = function() {
+                    reject(new Error("Erro ao carregar o modelo de imagem do certificado."));
+                }
+            });
+        }
+
+        // --- INSCRIÇÃO ---
+        let idUsuarioAtual = null;
+
+        window.salvarInscricaoNoFirebase = async function() {
+            const nome = document.getElementById('inp-nome').value;
+            const cpf = document.getElementById('inp-cpf').value;
+            const fone = document.getElementById('inp-fone').value; 
+            const email = document.getElementById('inp-email').value;
+            const inst = document.getElementById('inp-inst').value;
+            const tipo = document.getElementById('inp-tipo').value;
+            
+            const btn = document.getElementById('btn-confirmar-inscricao');
+            const blocoSubmissao = document.getElementById('bloco-submissao');
+            const msgAviso = document.getElementById('msg-aviso');
+
+            btn.innerText = "Salvando...";
+            btn.style.backgroundColor = "#ccc";
+            btn.disabled = true;
+
+            const agora = new Date();
+            const idProtocolo = `${agora.getFullYear()}${String(agora.getMonth() + 1).padStart(2, '0')}${String(agora.getDate()).padStart(2, '0')}${Math.floor(1000 + Math.random() * 9000)}`;
+
+            try {
+                // ... dentro de salvarInscricaoNoFirebase ...
+
+await setDoc(doc(db, "inscricoes", idProtocolo), {
+                                             nome: nome,
+                                         nome_busca: nome.toLowerCase(),
+                                     cpf: cpf,
+                                 telefone: fone, 
+                             email: email, 
+                         onde_estuda: inst,
+                    tipo_participacao: tipo,
+                 data: new Date().toLocaleString(),
+                protocolo: idProtocolo
+
+                });
+
+                idUsuarioAtual = idProtocolo;
+
+                exibirModal('sucesso', 'Inscrição Realizada!', 'Sua inscrição foi confirmada com sucesso.', idProtocolo);
+                
+                if (tipo === "Apresentador") {
+                    blocoSubmissao.classList.remove('bloqueado');
+                    msgAviso.style.display = "none";
+                    blocoSubmissao.scrollIntoView({ behavior: 'smooth' });
+                }
+
+                document.getElementById('form-inscricao').reset();
+                document.querySelectorAll('.campo-preenchido').forEach(el => el.classList.remove('campo-preenchido'));
+                verificarFormulario();
+                btn.style.opacity = "0.5";
+                btn.style.pointerEvents = "none";
+
+            } catch (e) {
+                console.error("Erro ao salvar: ", e);
+                exibirModal('erro', 'Erro ao Salvar', 'Não foi possível realizar a inscrição. Tente novamente.');
+            } finally {
+                btn.innerText = "CONFIRMAR INSCRIÇÃO";
+                btn.style.backgroundColor = "var(--azul-principal)";
+                btn.disabled = false;
+            }
+        }
+
+        window.salvarDadosTrabalho = async function() {
+            const titulo = document.getElementById('inp-titulo-trab').value;
+            const tema = document.getElementById('inp-tema-trab').value;
+            const resumo = document.getElementById('inp-resumo-trab').value;
+            const btnUpload = document.querySelector('.bloco-submissao .btn-acao');
+
+            if (!idUsuarioAtual) {
+                exibirModal('erro', 'Atenção', 'Você precisa confirmar sua inscrição primeiro!');
+                return;
+            }
+
+            if (titulo.trim() === "" || tema.trim() === "" || resumo.trim() === "") {
+                exibirModal('erro', 'Campos Vazios', 'Por favor, preencha todos os campos do trabalho.');
+                return;
+            }
+
+            btnUpload.innerText = "Enviando...";
+            btnUpload.disabled = true;
+
+            try {
+                const docRef = doc(db, "inscricoes", idUsuarioAtual);
+                
+                await updateDoc(docRef, {
+                    titulo_trabalho: titulo,
+                    tema_trabalho: tema,
+                    resumo_trabalho: resumo,
+                    data_submissao: new Date().toLocaleString()
+                });
+
+                exibirModal('sucesso', 'Trabalho Enviado!', 'Os dados do seu trabalho foram salvos com sucesso.');
+                
+                document.getElementById('form-trabalho').reset();
+                document.getElementById('bloco-submissao').classList.add('bloqueado');
+                document.getElementById('msg-aviso').innerText = "Trabalho enviado com sucesso!";
+                document.getElementById('msg-aviso').style.display = "block";
+
+            } catch (error) {
+                console.error("Erro no envio:", error);
+                exibirModal('erro', 'Erro no Envio', 'Não foi possível enviar o trabalho.');
+            } finally {
+                btnUpload.innerText = "ENVIAR TRABALHO";
+                btnUpload.disabled = false;
+            }
+        }
+    </script>
+
+</body>
+</html>

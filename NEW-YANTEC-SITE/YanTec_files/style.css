@@ -1,0 +1,75 @@
+:root{
+	--primary-color:  #5E92FA;
+	--secondary-color: #30B1BF;
+}
+
+.bnt-acessar{
+    background-color:var(--primary-color);
+    padding: 5px 20px;
+    color: white;
+}
+.painel{
+   /*  background: linear-gradient(90deg, rgba(0,111,254,1) 0%, rgba(94,146,250,1) 35%) !important; */
+    background: linear-gradient(90deg,  rgba(94,146,250,1) 0% , rgba(0,111,254,1) 35%) !important;
+    padding-top: 7% !important;
+	/* max-height: 550px !important;*/
+} 
+.painel-1{
+	/*  background: linear-gradient(90deg, rgba(0,111,254,1) 0%, rgba(94,146,250,1) 35%) !important; */
+	 background: linear-gradient(90deg,  rgba(94,146,250,1) 0% , rgba(0,111,254,1) 35%) !important;
+
+	 /* max-height: 550px !important;*/
+ } 
+.painel-footer{
+	background: linear-gradient(90deg,  rgba(94,146,250,1) 0% , rgba(0,111,254,1) 35%) !important;
+
+ }
+.currency-price{
+
+    bottom: 150px !important;
+}
+.bg-color-primary{
+	background-color: var(--secondary-color) !important;
+}
+.bnt-conhecer{
+	background-color: var(--primary-color) !important;
+	color: white;
+}
+.color-text-primary{
+	color: var(--secondary-color) !important;
+}
+.color-text-secondary{
+	color: var(--primary-color) !important;
+}
+.strong-title{
+	background-color: var(--primary-color);
+	padding: 0 7px 0 7px;
+	font-weight: normal;
+	
+}
+.justify{
+	text-align: justify !important;
+}
+.video{
+	border-radius: 50px;
+}
+.text-primary-yan{
+	color: var(--primary-color);
+}
+.mun-logo{
+	border: 2px solid  var(--primary-color) !important;
+	width: 60% !important ;
+
+}
+.z-index-painel{
+
+	z-index: 4 !important;
+}
+.bg-primary-yantec-2{
+	background-color: var(--primary-color) !important;
+}
+
+.bg-yantec{
+	background-image: url(../images/fundo-2.svg) !important;
+	background-size: cover;
+}

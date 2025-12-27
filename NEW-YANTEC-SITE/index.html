@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>YanTec - Soluções em Tecnologia Educacional</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="Yan Tecnologia LTDA" name="description">
+    
+    <link rel="shortcut icon" href="https://yantec.com.br//views/img/favicon.ico" type="image/x-icon">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css">
+
+    <style>
+        :root {
+            --primary-color: #5E92FA;
+            --secondary-color: #30B1BF;
+            --success-color: #28a745; 
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body { font-family: 'Poppins', sans-serif; color: #444; }
+
+        .bnt-acessar {
+            background-color: var(--primary-color);
+            padding: 10px 25px;
+            color: white !important;
+            text-decoration: none;
+            border-radius: 8px;
+            display: inline-block;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .bnt-acessar:hover {
+            background-color: var(--success-color) !important;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .navbar-nav .nav-link {
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .navbar-nav .nav-link.active {
+            color: var(--primary-color) !important;
+            font-weight: 700;
+        }
+
+        .painel, .painel-footer {
+            background: linear-gradient(90deg, rgba(94,146,250,1) 0%, rgba(0,111,254,1) 35%) !important;
+        }
+
+        .painel { padding-top: 7% !important; padding-bottom: 5% !important; }
+
+        .video {
+            border-radius: 50px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border: none;
+            border-radius: 12px;
+            padding: 35px 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-card:hover { 
+            transform: translateY(-8px); 
+            box-shadow: 0 15px 35px rgba(94, 146, 250, 0.15);
+        }
+
+        .stat-card i { font-size: 3rem; color: var(--primary-color); margin-bottom: 15px; }
+        .stat-card h2 { font-weight: 700; font-size: 1.8rem; color: #333; margin-bottom: 5px; }
+        .stat-card p { color: #888; font-size: 0.9rem; font-weight: 500; margin: 0; }
+
+        .impact-title { font-size: 2.5rem; line-height: 1.2; color: #333; font-weight: 700; }
+        .impact-line { width: 140px; height: 4px; background: var(--primary-color); border-radius: 10px; margin: 20px 0; }
+
+        .mun-logo {
+            border: 1px solid #ddd !important;
+            width: 140px !important;
+            height: 140px !important;
+            object-fit: contain;
+            margin: 0 auto;
+            border-radius: 50%;
+            padding: 20px;
+            background: white;
+        }
+        .text-primary-yan { color: var(--primary-color); }
+    </style>
+</head>
+
+<body data-bs-spy="scroll" data-bs-target="#navbarContent" data-bs-offset="100">
+
+    <nav class="navbar navbar-expand-lg bg-white navigation fixed-top shadow-sm">
+        <div class="container">
+            <a href="#home">
+                <img src="./YanTec_files/logo-1.svg" alt="YanTec" height="80" class="p-2">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <i class="fa fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" href="#home">Início</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#sobre">Sobre</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#produtos">Produtos</a></li>
+                </ul>
+                <div class="ms-lg-3">
+                    <a href="contato.html" class="bnt-acessar">Quero no meu município</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="section py-5 mt-5" id="home">
+        <div class="container mt-5">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="fw-bold mb-4 impact-title">Conheça as mais completas soluções para total informatização da sua <span class="text-primary-yan">Secretaria de Educação!</span></h1>
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="./YanTec_files/6478fa8d670803e4453a01fa_Image-min.png" width="70" class="me-3">
+                        <p class="mb-0 fs-5">Junte-se aos mais de <strong>100 mil usuários</strong> impactados com o sistema <strong>i-Educar</strong>!</p>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <img class="img-fluid d-block mx-auto" src="./YanTec_files/img-1.svg" alt="YanTec Soluções">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section painel">
+        <div class="container text-center">
+            <div class="video mx-auto" style="max-width: 950px;">
+                <video autoplay loop muted playsinline class="w-100 d-block">
+                    <source src="video.mp4" type="video/mp4">
+                </video>
+            </div>
+        </div>
+    </section>
+
+    <section class="section bg-light py-5" id="sobre">
+        <div class="container py-lg-5">
+            <div class="row align-items-center">
+                <div class="col-lg-5 mb-5 mb-lg-0">
+                    <h2 class="impact-title">Impactando e Inovando tecnologicamente a <span class="text-primary-yan">Educação!</span></h2>
+                    <div class="impact-line"></div>
+                    <h5 class="text-muted fw-normal">Sistema de Gestão Escolar</h5>
+                </div>
+                <div class="col-lg-7">
+                    <div class="row g-4 justify-content-center text-center">
+                        <div class="col-6 col-md-4"><div class="stat-card"><i class='bx bx-map-pin'></i><h2>+7</h2><p>Estados</p></div></div>
+                        <div class="col-6 col-md-4"><div class="stat-card"><i class='bx bx-map-alt'></i><h2>+40</h2><p>Municípios</p></div></div>
+                        <div class="col-6 col-md-4"><div class="stat-card"><i class='bx bxs-school'></i><h2>+500</h2><p>Escolas</p></div></div>
+                        <div class="col-6 col-md-4"><div class="stat-card"><i class='bx bx-face'></i><h2>+250 mil</h2><p>Alunos</p></div></div>
+                        <div class="col-6 col-md-4"><div class="stat-card"><i class='fa-solid fa-graduation-cap'></i><h2>+9 mil</h2><p>Professores</p></div></div>
+                        <div class="col-6 col-md-4"><div class="stat-card"><i class='bx bxs-group'></i><h2>+12 mil</h2><p>Usuários</p></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section py-5 bg-white" id="produtos">
+        <div class="container py-lg-5">
+            <div class="row align-items-center">
+                <div class="col-lg-7 col-md-8">
+                    <img class="img-fluid d-block" src="./YanTec_files/img-2.svg" alt="Innov Play" width="100%">
+                </div>
+                <div class="col-lg-5">
+                    <div class="content-middle">
+                        <h2 class="impact-title">Conheça a Plataforma Educacional <span class="text-primary-yan">Innov Play!</span></h2>
+                        <div class="impact-line"></div>
+                        <p class="fs-5 text-muted">A Educação constrói seres humanos, jogos alegram a vida, juntos transformam o <strong>mundo!</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section py-5" style="background-color: #fcfcfc;">
+        <div class="container text-center">
+            <h3 class="fw-bold mb-5">Municípios Parceiros</h3>
+            <div class="owl-carousel owl-theme" id="municipios-carousel">
+                <div class="item"><img src="./YanTec_files/12.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Maragogi</h6></div>
+                <div class="item"><img src="./YanTec_files/20.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Pilar</h6></div>
+                <div class="item"><img src="./YanTec_files/28.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">São Miguel dos Campos</h6></div>
+                <div class="item"><img src="./YanTec_files/18.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Penedo</h6></div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="painel-footer text-white pt-5 pb-3">
+        <div class="container text-center">
+            <div class="fs-3 mb-3">
+                <a href="#" class="text-white me-3"><i class="fab fa-whatsapp"></i></a>
+                <a href="#" class="text-white me-3"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="text-white"><i class="fab fa-youtube"></i></a>
+            </div>
+            <p class="small opacity-75">2025 © Yan Tecnologia - Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+
+    <script>
+        $(document).ready(function(){
+            // Carrossel Municípios
+            $("#municipios-carousel").owlCarousel({
+                loop: true, margin: 30, autoplay: true, responsive: { 0: { items: 1 }, 600: { items: 2 }, 1000: { items: 4 } }
+            });
+
+            // Lógica simples de navegação para links internos
+            $('.navbar-nav .nav-link').on('click', function() {
+                $('.navbar-nav .nav-link').removeClass('active');
+                $(this).addClass('active');
+                
+                if ($('.navbar-toggler').is(':visible')) {
+                    $('.navbar-collapse').collapse('hide');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
