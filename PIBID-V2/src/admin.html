@@ -385,6 +385,36 @@
         }
         window.fazerLogout = async function() { await signOut(auth); window.location.reload(); }
 
+        // --- FUNÇÕES UTILITÁRIAS (LOGS E ALERTS) ---
+        window.registrarLog = async function(acao, alvoId) {
+            try {
+                const user = auth.currentUser;
+                const email = user ? user.email : "Sistema";
+                await addDoc(collection(db, "logs"), {
+                    data: new Date().toLocaleString(),
+                    admin: email,
+                    acao: acao,
+                    alvo_id: alvoId || "N/A",
+                    timestamp: Date.now()
+                });
+            } catch(e) { console.error("Erro ao registrar log:", e); }
+        }
+
+        window.mostrarAlerta = function(titulo, msg, tipo='info') {
+            const icon = document.getElementById('aviso-icon');
+            const h2 = document.getElementById('aviso-titulo');
+            const p = document.getElementById('aviso-msg');
+            
+            h2.innerText = titulo;
+            p.innerText = msg;
+            
+            if(tipo === 'erro') { icon.innerText = 'error'; icon.style.color = 'var(--vermelho-erro)'; }
+            else if(tipo === 'sucesso') { icon.innerText = 'check_circle'; icon.style.color = 'var(--verde-sucesso)'; }
+            else { icon.innerText = 'info'; icon.style.color = 'var(--azul-principal)'; }
+
+            document.getElementById('modal-aviso').style.display = 'flex';
+        }
+
         // --- CRIAR NOVO ADMIN ---
         window.salvarAdmin = async function() {
             const email = document.getElementById('new-admin-email').value.trim();
@@ -393,7 +423,7 @@
             const msg = document.getElementById('msg-config');
 
             if(!email || pass.length < 6) {
-                alert("E-mail inválido ou senha muito curta (min 6).");
+                mostrarAlerta("Dados Inválidos", "O e-mail é obrigatório e a senha deve ter no mínimo 6 caracteres.", "erro");
                 return;
             }
 
@@ -406,7 +436,9 @@
                 await createUserWithEmailAndPassword(secondaryAuth, email, pass);
                 await signOut(secondaryAuth);
                 
-                alert("Novo administrador criado com sucesso!");
+                await registrarLog("Criou novo admin", email);
+                mostrarAlerta("Sucesso", "Novo administrador criado com sucesso!", "sucesso");
+                
                 document.getElementById('new-admin-email').value = "";
                 document.getElementById('new-admin-pass').value = "";
                 fecharModal('modal-config');
@@ -464,11 +496,10 @@
                     if(!item.excluido) { cT++; if(d.tipo_participacao==="Apresentador") cA++; else if(d.tipo_participacao==="Ouvinte") cO++; else if(d.tipo_participacao==="Monitor") cM++; }
                 });
                 
-                // CORREÇÃO: Ordenação robusta (Timestamp ou String)
+                // CORREÇÃO: Ordenação por Protocolo (ID) Decrescente - Mais robusto
                 todosInscritos.sort((a,b) => {
-                     const tA = a.data && a.data.seconds ? a.data.seconds * 1000 : (a.data ? new Date(a.data).getTime() : 0);
-                     const tB = b.data && b.data.seconds ? b.data.seconds * 1000 : (b.data ? new Date(b.data).getTime() : 0);
-                     return tB - tA;
+                     // Protocolo é string numérica (ex: 20251228...), string compare desc funciona perfeitamente
+                     return b.id.localeCompare(a.id);
                 });
 
                 document.getElementById('total-geral').innerText = cT; document.getElementById('total-apresentadores').innerText = cA;
@@ -530,9 +561,11 @@
         window.alternarCertificado = async function(id, estado) {
             try {
                 await updateDoc(doc(db, "inscricoes", id), { certificado_liberado: estado });
+                await registrarLog(estado ? "Liberou certificado" : "Bloqueou certificado", id);
+                // Feedback visual rápido
                 carregarDados();
             } catch(e) {
-                alert("Erro ao alterar status do certificado: " + e.message);
+                mostrarAlerta("Erro", "Falha ao alterar status do certificado: " + e.message, "erro");
             }
         }
 
@@ -550,7 +583,7 @@
             const btn = document.getElementById('btn-upload');
             const progresso = document.getElementById('progresso-upload');
             
-            if (fileInput.files.length === 0) return alert("Selecione pelo menos uma imagem!");
+            if (fileInput.files.length === 0) return mostrarAlerta("Atenção", "Selecione pelo menos uma imagem!", "erro");
             
             const files = fileInput.files;
             const tituloBase = tituloInput.value;
@@ -574,12 +607,13 @@
                     });
                     sucessos++;
                 }
-                alert(`${sucessos} fotos enviadas com sucesso!`); 
+                await registrarLog("Upload de fotos", `Enviou ${sucessos} fotos (${tituloBase})`);
+                mostrarAlerta("Concluído", `${sucessos} fotos enviadas com sucesso!`, "sucesso"); 
                 fileInput.value = ""; tituloInput.value = ""; 
                 document.getElementById('nome-arquivo-selecionado').innerText = ""; 
                 carregarGaleria();
             } catch (error) { 
-                console.error("Erro no upload:", error); alert("Erro ao enviar foto: " + error.message);
+                console.error("Erro no upload:", error); mostrarAlerta("Erro", "Erro ao enviar foto: " + error.message, "erro");
             } finally { 
                 btn.disabled = false; progresso.style.display = 'none'; progresso.innerText = "Enviando...";
             }
@@ -615,18 +649,23 @@
             const novoTitulo = document.getElementById(`input-legenda-${docId}`).value;
             try {
                 await updateDoc(doc(db, "galeria", docId), { titulo: novoTitulo });
-                alert("Legenda atualizada!");
+                await registrarLog("Editou legenda", docId);
+                mostrarAlerta("Salvo", "Legenda atualizada!", "sucesso");
             } catch (error) {
-                console.error(error); alert("Erro ao salvar.");
+                console.error(error); mostrarAlerta("Erro", "Erro ao salvar.", "erro");
             }
         }
 
         window.deletarFoto = async function(docId, caminhoStorage) {
+            // Em caso de deleção, o confirm nativo é aceitável ou podemos usar o modal de confirmação existente.
+            // Para rapidez, mantive o confirm nativo aqui, mas podemos mudar se o usuário pedir.
             if(!confirm("Tem certeza que deseja excluir esta foto permanentemente?")) return;
             try {
                 if(caminhoStorage) await deleteObject(ref(storage, caminhoStorage)).catch(e => console.log(e));
-                await deleteDoc(doc(db, "galeria", docId)); carregarGaleria();
-            } catch(error) { console.error(error); alert("Erro ao excluir imagem."); }
+                await deleteDoc(doc(db, "galeria", docId)); 
+                await registrarLog("Excluiu foto", docId);
+                carregarGaleria();
+            } catch(error) { console.error(error); mostrarAlerta("Erro", "Erro ao excluir imagem.", "erro"); }
         }
 
         // --- LOGS E MODAIS ---
@@ -652,12 +691,24 @@
         window.executarAcaoConfirmada = async function() {
             fecharModal('modal-confirmacao');
             try {
-                if(acaoPendente === 'confirmar') await updateDoc(doc(db,"inscricoes",idPendente),{confirmado:true});
-                else if(acaoPendente === 'lixeira') await updateDoc(doc(db,"inscricoes",idPendente),{excluido:true});
-                else if(acaoPendente === 'restaurar') await updateDoc(doc(db,"inscricoes",idPendente),{excluido:false});
-                else if(acaoPendente === 'excluir_permanente') await deleteDoc(doc(db,"inscricoes",idPendente));
+                if(acaoPendente === 'confirmar') {
+                     await updateDoc(doc(db,"inscricoes",idPendente),{confirmado:true});
+                     await registrarLog("Confirmou Inscrição", idPendente);
+                }
+                else if(acaoPendente === 'lixeira') {
+                     await updateDoc(doc(db,"inscricoes",idPendente),{excluido:true});
+                     await registrarLog("Moveu para lixeira", idPendente);
+                }
+                else if(acaoPendente === 'restaurar') {
+                     await updateDoc(doc(db,"inscricoes",idPendente),{excluido:false});
+                     await registrarLog("Restaurou da lixeira", idPendente);
+                }
+                else if(acaoPendente === 'excluir_permanente') {
+                     await deleteDoc(doc(db,"inscricoes",idPendente));
+                     await registrarLog("Excluiu permanentemente", idPendente);
+                }
                 carregarDados();
-            } catch(e) { alert("Erro na ação: " + e.message); }
+            } catch(e) { mostrarAlerta("Erro", "Erro na ação: " + e.message, "erro"); }
         }
         window.verDetalhes = function(id) {
             const i = todosInscritos.find(x => x.id === id);
