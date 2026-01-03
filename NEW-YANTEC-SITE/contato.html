@@ -10,65 +10,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 
-    <style>
-        :root {
-            --primary-color: #5E92FA;
-            --success-color: #28a745; 
-        }
-
-        body { font-family: 'Poppins', sans-serif; color: #444; background-color: #f8f9fa; }
-
-        .navbar { border-bottom: 1px solid #eee; background: white !important; }
-
-        .bnt-acessar {
-            background-color: var(--success-color); /* Verde fixo nesta página */
-            padding: 10px 25px;
-            color: white !important;
-            text-decoration: none;
-            border-radius: 8px;
-            display: inline-block;
-            font-weight: 600;
-        }
-
-        .impact-title { font-size: 2.5rem; line-height: 1.2; color: #333; font-weight: 700; }
-        .text-primary-yan { color: var(--primary-color); }
-        .impact-line { width: 100px; height: 4px; background: var(--primary-color); border-radius: 10px; margin: 20px 0; }
-
-        .contact-info-card {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-            border-left: 5px solid var(--primary-color);
-        }
-
-        .form-container {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
-        }
-
-        .form-control { padding: 12px; border-radius: 8px; border: 1px solid #e0e0e0; }
-
-        .btn-enviar {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            border: none;
-            font-weight: 600;
-            width: 100%;
-            transition: 0.3s;
-        }
-        .btn-enviar:hover { background-color: var(--success-color); transform: translateY(-2px); }
-
-        .painel-footer {
-            background: linear-gradient(90deg, rgba(94,146,250,1) 0%, rgba(0,111,254,1) 35%) !important;
-            color: white;
-        }
-    </style>
+    <!-- Custom CSS -->
+    <link href="./YanTec_files/custom.css" rel="stylesheet">
 </head>
 <body>
 
@@ -161,12 +104,74 @@
         </div>
     </section>
 
-    <footer class="painel-footer py-4 mt-5">
-        <div class="container text-center">
-            <p class="mb-0 small opacity-75">2025 © Yan Tecnologia - Todos os direitos reservados.</p>
+    <footer class="painel-footer text-white pt-5 pb-3 mt-auto">
+        <div class="container">
+            <div class="row">
+                <!-- Coluna 1: Acesso Rápido -->
+                <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                    <h5 class="fw-bold mb-4">Acesso Rápido</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="index.html" class="text-white text-decoration-none opacity-75">Início</a></li>
+                        <li class="mb-2"><a href="contato.html" class="text-white text-decoration-none opacity-75">Contatos</a></li>
+                        <li class="mb-2"><a href="#" class="text-white text-decoration-none opacity-75">Suporte</a></li>
+                        <li class="mb-2"><a href="#" class="text-white text-decoration-none opacity-75">Acesso</a></li>
+                    </ul>
+                </div>
+
+                <!-- Coluna 2: Produtos -->
+                <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                    <h5 class="fw-bold mb-4">Produtos</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="produtos.html#i-educar" class="text-white text-decoration-none opacity-75">i-Educar</a></li>
+                        <li class="mb-2"><a href="produtos.html#e-diario" class="text-white text-decoration-none opacity-75">e-Diário</a></li>
+                        <li class="mb-2"><a href="produtos.html#innov-play" class="text-white text-decoration-none opacity-75">Innov Play</a></li>
+                        <li class="mb-2"><a href="produtos.html#laboratorios" class="text-white text-decoration-none opacity-75">Laboratórios</a></li>
+                    </ul>
+                </div>
+
+                <!-- Coluna 3: Local -->
+                <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                    <h5 class="fw-bold mb-4">Local</h5>
+                    <p class="opacity-75 mb-2">São Miguel dos Campos - AL</p>
+                    <p class="opacity-75">Hélio Jatobá 3, Quadra A4</p>
+                </div>
+
+                <!-- Coluna 4: Entre em Contato -->
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="fw-bold mb-4">Entre em Contato</h5>
+                    
+                    <div class="mb-4">
+                        <div class="d-inline-block px-2 py-1 rounded mb-2" style="background: rgba(255,255,255,0.15); font-size: 0.75rem; font-weight: 700;">Comercial YanTec</div>
+                        <a href="mailto:comercial@yantec.com.br" class="d-block text-white text-decoration-none fw-medium mb-1">comercial@yantec.com.br</a>
+                        <div class="opacity-75"><i class="fa-brands fa-whatsapp me-2"></i>(82) 9 9999-1404</div>
+                    </div>
+
+                    <div>
+                        <div class="d-inline-block px-2 py-1 rounded mb-2" style="background: rgba(255,255,255,0.15); font-size: 0.75rem; font-weight: 700;">Suporte YanTec</div>
+                        <a href="mailto:suporte@yantec.com.br" class="d-block text-white text-decoration-none fw-medium mb-1">suporte@yantec.com.br</a>
+                        <div class="opacity-75"><i class="fa-brands fa-whatsapp me-2"></i>(82) 9 9679-2564</div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-5 opacity-25">
+
+            <div class="row align-items-center">
+                <div class="col-md-8 text-center text-md-start mb-3 mb-md-0">
+                    <p class="mb-0 small opacity-75">
+                        2025 © Yan Tecnologia Soluções em TI - Todos os direitos reservados.
+                        <span style='opacity:0.7; font-weight:600; margin-left:5px;'> | Created for Dev root@J/A:~#</span>
+                    </p>
+                </div>
+                <div class="col-md-4 text-center text-md-end">
+                    <a href="#" class="text-white fs-4 me-3 opacity-75"><i class="fab fa-whatsapp"></i></a>
+                    <a href="#" class="text-white fs-4 me-3 opacity-75"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-white fs-4 opacity-75"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
         </div>
     </footer>
 
 </body>
 </html>
-<!-- root@J/A:~# -->
+

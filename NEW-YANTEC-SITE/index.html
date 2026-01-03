@@ -15,94 +15,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css">
 
-    <style>
-        :root {
-            --primary-color: #5E92FA;
-            --secondary-color: #30B1BF;
-            --success-color: #28a745; 
-        }
-
-        html { scroll-behavior: smooth; }
-
-        body { font-family: 'Poppins', sans-serif; color: #444; }
-
-        .bnt-acessar {
-            background-color: var(--primary-color);
-            padding: 10px 25px;
-            color: white !important;
-            text-decoration: none;
-            border-radius: 8px;
-            display: inline-block;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-
-        .bnt-acessar:hover {
-            background-color: var(--success-color) !important;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-        }
-
-        .navbar-nav .nav-link {
-            font-weight: 500;
-            transition: 0.3s;
-        }
-
-        .navbar-nav .nav-link.active {
-            color: var(--primary-color) !important;
-            font-weight: 700;
-        }
-
-        .painel, .painel-footer {
-            background: linear-gradient(90deg, rgba(94,146,250,1) 0%, rgba(0,111,254,1) 35%) !important;
-        }
-
-        .painel { padding-top: 7% !important; padding-bottom: 5% !important; }
-
-        .video {
-            border-radius: 50px;
-            overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-        }
-
-        .stat-card {
-            background: #ffffff;
-            border: none;
-            border-radius: 12px;
-            padding: 35px 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .stat-card:hover { 
-            transform: translateY(-8px); 
-            box-shadow: 0 15px 35px rgba(94, 146, 250, 0.15);
-        }
-
-        .stat-card i { font-size: 3rem; color: var(--primary-color); margin-bottom: 15px; }
-        .stat-card h2 { font-weight: 700; font-size: 1.8rem; color: #333; margin-bottom: 5px; }
-        .stat-card p { color: #888; font-size: 0.9rem; font-weight: 500; margin: 0; }
-
-        .impact-title { font-size: 2.5rem; line-height: 1.2; color: #333; font-weight: 700; }
-        .impact-line { width: 140px; height: 4px; background: var(--primary-color); border-radius: 10px; margin: 20px 0; }
-
-        .mun-logo {
-            border: 1px solid #ddd !important;
-            width: 140px !important;
-            height: 140px !important;
-            object-fit: contain;
-            margin: 0 auto;
-            border-radius: 50%;
-            padding: 20px;
-            background: white;
-        }
-        .text-primary-yan { color: var(--primary-color); }
-    </style>
+    <!-- Custom CSS -->
+    <link href="./YanTec_files/custom.css" rel="stylesheet">
 </head>
 
 <body data-bs-spy="scroll" data-bs-target="#navbarContent" data-bs-offset="100">
@@ -117,9 +31,9 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarContent">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link active" href="#home">Início</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#sobre">Sobre</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#produtos">Produtos</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="index.html">Início</a></li>
+                    <li class="nav-item"><a class="nav-link" href="sobre.html">Sobre</a></li>
+                    <li class="nav-item"><a class="nav-link" href="produtos.html">Produtos</a></li>
                 </ul>
                 <div class="ms-lg-3">
                     <a href="contato.html" class="bnt-acessar">Quero no meu município</a>
@@ -198,22 +112,115 @@
         <div class="container text-center">
             <h3 class="fw-bold mb-5">Municípios Parceiros</h3>
             <div class="owl-carousel owl-theme" id="municipios-carousel">
-                <div class="item"><img src="./YanTec_files/12.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Maragogi</h6></div>
-                <div class="item"><img src="./YanTec_files/20.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Pilar</h6></div>
-                <div class="item"><img src="./YanTec_files/28.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">São Miguel dos Campos</h6></div>
-                <div class="item"><img src="./YanTec_files/18.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Penedo</h6></div>
+                <div class="item"><img src="./YanTec_files/1.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/2.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/3.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/4.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/5.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/6.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/7.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/8.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/9.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/10.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/11.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/12.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/13.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/14.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/15.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/16.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/17.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/18.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/19.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/20.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/21.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/22.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/23.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/24.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/25.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/26.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/27.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/28.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/29.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/30.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/31.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/32.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/33.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/34.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/35.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/36.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/37.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/38.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/39.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
+                <div class="item"><img src="./YanTec_files/40.svg" class="mun-logo mb-2"><h6 class="mt-2 fw-semibold text-muted">Município</h6></div>
             </div>
         </div>
     </section>
 
     <footer class="painel-footer text-white pt-5 pb-3">
-        <div class="container text-center">
-            <div class="fs-3 mb-3">
-                <a href="#" class="text-white me-3"><i class="fab fa-whatsapp"></i></a>
-                <a href="#" class="text-white me-3"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="text-white"><i class="fab fa-youtube"></i></a>
+        <div class="container">
+            <div class="row">
+                <!-- Coluna 1: Acesso Rápido -->
+                <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                    <h5 class="fw-bold mb-4">Acesso Rápido</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="index.html" class="text-white text-decoration-none opacity-75">Início</a></li>
+                        <li class="mb-2"><a href="contato.html" class="text-white text-decoration-none opacity-75">Contatos</a></li>
+                        <li class="mb-2"><a href="#" class="text-white text-decoration-none opacity-75">Suporte</a></li>
+                        <li class="mb-2"><a href="#" class="text-white text-decoration-none opacity-75">Acesso</a></li>
+                    </ul>
+                </div>
+
+                <!-- Coluna 2: Produtos -->
+                <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                    <h5 class="fw-bold mb-4">Produtos</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="produtos.html#i-educar" class="text-white text-decoration-none opacity-75">i-Educar</a></li>
+                        <li class="mb-2"><a href="produtos.html#e-diario" class="text-white text-decoration-none opacity-75">e-Diário</a></li>
+                        <li class="mb-2"><a href="produtos.html#innov-play" class="text-white text-decoration-none opacity-75">Innov Play</a></li>
+                        <li class="mb-2"><a href="produtos.html#laboratorios" class="text-white text-decoration-none opacity-75">Laboratórios</a></li>
+                    </ul>
+                </div>
+
+                <!-- Coluna 3: Local -->
+                <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                    <h5 class="fw-bold mb-4">Local</h5>
+                    <p class="opacity-75 mb-2">São Miguel dos Campos - AL</p>
+                    <p class="opacity-75">Hélio Jatobá 3, Quadra A4</p>
+                </div>
+
+                <!-- Coluna 4: Entre em Contato -->
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="fw-bold mb-4">Entre em Contato</h5>
+                    
+                    <div class="mb-4">
+                        <div class="d-inline-block px-2 py-1 rounded mb-2" style="background: rgba(255,255,255,0.15); font-size: 0.75rem; font-weight: 700;">Comercial YanTec</div>
+                        <a href="mailto:comercial@yantec.com.br" class="d-block text-white text-decoration-none fw-medium mb-1">comercial@yantec.com.br</a>
+                        <div class="opacity-75"><i class="fa-brands fa-whatsapp me-2"></i>(82) 9 9999-1404</div>
+                    </div>
+
+                    <div>
+                        <div class="d-inline-block px-2 py-1 rounded mb-2" style="background: rgba(255,255,255,0.15); font-size: 0.75rem; font-weight: 700;">Suporte YanTec</div>
+                        <a href="mailto:suporte@yantec.com.br" class="d-block text-white text-decoration-none fw-medium mb-1">suporte@yantec.com.br</a>
+                        <div class="opacity-75"><i class="fa-brands fa-whatsapp me-2"></i>(82) 9 9679-2564</div>
+                    </div>
+                </div>
             </div>
-            <p class="small opacity-75">2025 © Yan Tecnologia - Todos os direitos reservados. <span style='opacity:0.7; font-weight:600; margin-left:5px;'> | Created for Dev root@J/A:~#</span></p>
+
+            <hr class="my-5 opacity-25">
+
+            <div class="row align-items-center">
+                <div class="col-md-8 text-center text-md-start mb-3 mb-md-0">
+                    <p class="mb-0 small opacity-75">
+                        2025 © Yan Tecnologia Soluções em TI - Todos os direitos reservados.
+                        <span style='opacity:0.7; font-weight:600; margin-left:5px;'> | Created for Dev root@J/A:~#</span>
+                    </p>
+                </div>
+                <div class="col-md-4 text-center text-md-end">
+                    <a href="#" class="text-white fs-4 me-3 opacity-75"><i class="fab fa-whatsapp"></i></a>
+                    <a href="#" class="text-white fs-4 me-3 opacity-75"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-white fs-4 opacity-75"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
         </div>
     </footer>
 
@@ -225,7 +232,7 @@
         $(document).ready(function(){
             // Carrossel Municípios
             $("#municipios-carousel").owlCarousel({
-                loop: true, margin: 30, autoplay: true, responsive: { 0: { items: 1 }, 600: { items: 2 }, 1000: { items: 4 } }
+                loop: true, margin: 30, autoplay: true, autoplayTimeout: 1000, dots: false, responsive: { 0: { items: 1 }, 600: { items: 2 }, 1000: { items: 4 } }
             });
 
             // Lógica simples de navegação para links internos

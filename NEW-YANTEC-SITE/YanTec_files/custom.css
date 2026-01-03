@@ -1,0 +1,252 @@
+/* =========================================
+   YanTec Custom Styles
+   Dev: root@J/A:~#
+   ========================================= */
+
+:root {
+  --primary-color: #5e92fa;
+  --secondary-color: #30b1bf;
+  --success-color: #28a745;
+  --text-color: #444;
+  --bg-light: #f8f9fa;
+  --footer-gradient-start: rgba(94, 146, 250, 1);
+  --footer-gradient-end: rgba(0, 111, 254, 1);
+}
+
+/* --- Global & Typography --- */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+  color: var(--text-color);
+  overflow-x: hidden;
+}
+
+/* --- Utilities --- */
+.text-primary-yan {
+  color: var(--primary-color) !important;
+}
+.bg-primary-yan {
+  background-color: var(--primary-color) !important;
+}
+
+/* --- Buttons --- */
+.bnt-acessar {
+  background-color: var(--primary-color);
+  padding: 10px 25px;
+  color: white !important;
+  text-decoration: none;
+  border-radius: 8px;
+  display: inline-block;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.bnt-acessar:hover {
+  background-color: var(--success-color) !important;
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+  transform: translateY(-1px);
+}
+
+/* --- Navigation --- */
+.navbar-nav .nav-link {
+  font-weight: 500;
+  transition: 0.3s;
+  color: #444;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active,
+.navbar-nav .nav-link.active-page {
+  color: var(--primary-color) !important;
+  font-weight: 700;
+}
+
+/* Navbar Toggle Fix/Style */
+.navbar-toggler {
+  border: none;
+  padding: 0.25rem 0.5rem;
+}
+
+.navbar-toggler:focus {
+  box-shadow: none;
+  outline: 2px solid var(--primary-color);
+}
+
+/* --- Sections & Layout --- */
+.section {
+  position: relative;
+  padding-top: 80px;
+  padding-bottom: 80px;
+}
+
+.painel,
+.painel-footer {
+  background: linear-gradient(
+    90deg,
+    var(--footer-gradient-start) 0%,
+    var(--footer-gradient-end) 35%
+  ) !important;
+}
+
+.painel {
+  padding-top: 7% !important;
+  padding-bottom: 5% !important;
+}
+
+/* --- Impact Typography --- */
+.impact-title {
+  font-size: 2.5rem;
+  line-height: 1.2;
+  color: #333;
+  font-weight: 700;
+}
+
+.impact-line {
+  width: 140px;
+  height: 4px;
+  background: var(--primary-color);
+  border-radius: 10px;
+  margin: 20px 0;
+}
+
+/* --- Cards & Components --- */
+
+/* Stat Card (Index) */
+.stat-card {
+  background: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 35px 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(94, 146, 250, 0.15);
+}
+
+.stat-card i {
+  font-size: 3rem;
+  color: var(--primary-color);
+  margin-bottom: 15px;
+}
+.stat-card h2 {
+  font-weight: 700;
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 5px;
+}
+.stat-card p {
+  color: #888;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Video Container (Index) */
+.video {
+  border-radius: 50px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* Municipality Logo (Index) */
+.mun-logo {
+  border: 1px solid #ddd !important;
+  width: 140px !important;
+  height: 140px !important;
+  object-fit: contain;
+  margin: 0 auto;
+  border-radius: 50%;
+  padding: 20px;
+  background: white;
+}
+
+/* Blog/Testimonial Box (Sobre) */
+.blog-box {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+  height: 100%;
+  transition: transform 0.3s;
+}
+
+.blog-box:hover {
+  transform: translateY(-5px);
+}
+
+.blog-box img {
+  height: 80px;
+  width: 80px;
+  object-fit: cover;
+  border-radius: 50% !important;
+  margin-bottom: 15px;
+}
+
+.blog-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+/* Contact Page Specifics */
+.contact-info-card {
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+  border-left: 5px solid var(--primary-color);
+}
+
+.form-container {
+  background: white;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+}
+
+.form-control {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.btn-enviar {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 15px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  width: 100%;
+  transition: 0.3s;
+}
+
+.btn-enviar:hover {
+  background-color: var(--success-color);
+  transform: translateY(-2px);
+}
+
+/* Content Helpers */
+.justify {
+  text-align: justify;
+}
+.content-middle h1 {
+  font-weight: bold;
+  color: #333;
+}
+.content-middle p {
+  color: #666;
+}
